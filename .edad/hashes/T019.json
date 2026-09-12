@@ -2,7 +2,7 @@
   "tests/test_harness_identity.py": "784fd1214ed83d13b23654fc093d38970b373ed39d91261e5def68d43c2b3fdb",
   "tests/test_session_queue.py": "e8f90a457a2d28a110683f039e7b80615e0aa0eae3d4581a175afe499e3c57dd",
   "_edad": {
-    "approved_at": "2026-09-12T19:25:29.757768+00:00",
+    "approved_at": "2026-09-12T19:32:52.391894+00:00",
     "ticket_sha256": "1843b7a91045d15c6831ab64fd586cbf1bd401e5b9d9b3acfa257d0b9aaa5ada",
     "decisions": [
       "D1",
@@ -93,8 +93,8 @@
     ],
     "mutation_proof": null,
     "full_gate_baseline": {
-      "taken_at": "2026-09-12T19:25:27.358063+00:00",
-      "commit": "2ccb131aea3cfa06770d11792158dcf65d5d0b44",
+      "taken_at": "2026-09-12T19:32:50.157853+00:00",
+      "commit": "2a3ef6d0dbaa92970c4d9edfe9bd8aad83448aa7",
       "commands": {
         "python3 -m pytest -q": {
           "exit_code": 1,
