@@ -33,7 +33,7 @@ import subprocess
 import sys
 import time
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # By name into this module: cmd_run's lifecycle is tested with the ensure and
@@ -971,7 +971,7 @@ def run_session(root: Path, ticket: dict, args) -> int:  # noqa: PLR0915  # line
     wt, branch = make_worktree(root, ticket["id"], base)
     log = SessionLog(
         ticket=ticket["id"],
-        started_at=datetime.now(timezone.utc).isoformat(),
+        started_at=datetime.now(UTC).isoformat(),
         base_commit=base,
         branch=branch,
         sandbox=args.sandbox,

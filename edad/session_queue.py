@@ -67,7 +67,7 @@ import sys
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Imported by name, not through their modules: the tests replace
@@ -175,7 +175,7 @@ def discard_command(
 
 
 def new_run_branch() -> str:
-    return RUN_BRANCH_PREFIX + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
+    return RUN_BRANCH_PREFIX + datetime.now(UTC).strftime("%Y%m%dT%H%M%S")
 
 
 # --- D1: the queue is a plan, made before anything runs ---------------------
@@ -624,7 +624,7 @@ class RunState:
         self.budget_s = budget_s
         self.sandbox = sandbox
         self.network = network
-        self.started_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        self.started_at = datetime.now(UTC).isoformat(timespec="seconds")
         # monotonic, because the budget is a duration: a clock stepped by NTP
         # or by a DST change mid-night would otherwise fire the breaker, or
         # silently unbound it.
