@@ -1,0 +1,136 @@
+{
+  "ticket": "T019",
+  "started_at": "2026-09-12T19:37:25.293890+00:00",
+  "commit": "6f88d8fae959ca95d00786e469494f8e1df03bc0",
+  "base_ref": "2a3ef6d0dbaa92970c4d9edfe9bd8aad83448aa7",
+  "gate": "full_gate",
+  "freeze_ok": true,
+  "commands_ok": true,
+  "scope_violations": [],
+  "scope_enforced": true,
+  "violations": [],
+  "changed_files": [
+    "QUICKSTART.md",
+    "edad/gate.py",
+    "edad/session.py",
+    "edad/session_queue.py",
+    "requirements-gate.txt"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest -q",
+      "exit_code": 0,
+      "duration_s": 17.1,
+      "output_tail": "........................................................................ [ 31%]\n........................................................................ [ 62%]\n........................................................................ [ 93%]\n................                                                         [100%]\n232 passed in 16.93s\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "duration_s": 0.05,
+      "output_tail": "All checks passed!\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    }
+  ],
+  "decisions": [
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D5",
+    "D6"
+  ],
+  "red_proof": [
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_a_vcs_install_is_identified_by_its_recorded_commit -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_a_vcs_install_is_identified_by_its_recorded_commit"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_an_editable_install_is_identified_by_the_checkout_head_and_dirtiness -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_an_editable_install_is_identified_by_the_checkout_head_and_dirtiness"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_a_bare_checkout_is_identified_by_head_with_no_version -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_a_bare_checkout_is_identified_by_head_with_no_version"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_nothing_known_is_unknown_with_nulls_not_an_error -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_nothing_known_is_unknown_with_nulls_not_an_error"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_the_gatherer_never_raises_and_degrades_to_unknown -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_the_gatherer_never_raises_and_degrades_to_unknown"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_toolchain_versions_stores_what_the_pin_check_measures -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_toolchain_versions_stores_what_the_pin_check_measures"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_the_written_record_carries_harness_and_toolchain -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_the_written_record_carries_harness_and_toolchain"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_the_lock_records_harness_and_toolchain_at_approval -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_the_lock_records_harness_and_toolchain_at_approval"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_the_session_log_records_the_harness_beside_permissions -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_the_session_log_records_the_harness_beside_permissions"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_the_run_log_records_the_harness_beside_network -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_the_run_log_records_the_harness_beside_network"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_quickstart_has_a_releasing_section_naming_the_tag_step -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_quickstart_has_a_releasing_section_naming_the_tag_step"
+      ]
+    }
+  ],
+  "mutation_proof": null,
+  "approved": true,
+  "ticket_verified": true,
+  "baseline_commit": null,
+  "new_failures": {},
+  "uncomparable_failures": [],
+  "harness": {},
+  "toolchain": {},
+  "passed": true,
+  "passed_modulo_baseline": false
+}
