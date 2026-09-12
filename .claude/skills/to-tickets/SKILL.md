@@ -270,6 +270,17 @@ diff touches nothing outside `scope`.
   enforced on the agent container under `--sandbox docker` (no route out except the
   model-API proxy) and *advisory* for the verifier, which runs gate commands on the
   host with `EDAD_NETWORK=deny` set and nothing stopping a suite that ignores it.
+- **Git does not work inside the agent container, by design.** Under `--sandbox docker`
+  the worktree's `.git` is a file pointing at a host path that does not exist in the
+  container, so the agent cannot rewrite history — and so any test that shells out to
+  `git` (a `check-ignore`, a `rev-parse`, a `log`) fails for the agent when it runs the
+  suite itself, and passes for the verifier, which runs on the host. T018's agent met
+  exactly this in `test_run_log_is_gitignored_telemetry`, read it correctly as an
+  environment artifact and left it alone; a less careful agent will try to "fix" a
+  test it cannot make pass. Two consequences. Prefer acceptance commands that do not
+  shell to git. And when a frozen test in the suite does, say so in the ticket's
+  Context — that the failure is expected in-container, is not the agent's, and is not
+  to be worked around — rather than leaving the agent to work it out.
 - **A gate command must not itself be a shell.** On the host the agent is allowed
   exactly the ticket's `acceptance` and `full_gate` commands (D19 of the sandbox tier),
   so `bash -c "..."` or `sh script.sh` as a gate command hands it a shell. Name the
