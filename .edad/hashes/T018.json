@@ -1,7 +1,7 @@
 {
   "tests/test_packaging.py": "3351f747f6e955888ed77c1ecce293a7d3b233b90c4fb738ab6ac7aa4eb237d7",
   "_edad": {
-    "approved_at": "2026-09-12T00:31:47.402826+00:00",
+    "approved_at": "2026-09-12T00:39:23.126679+00:00",
     "ticket_sha256": "0188296c708e22b3f6a1d62fd4d95226ec06c3ac5cee8847a438644e34f83f88",
     "decisions": [
       "D1",
@@ -55,8 +55,8 @@
     ],
     "mutation_proof": null,
     "full_gate_baseline": {
-      "taken_at": "2026-09-12T00:31:46.356625+00:00",
-      "commit": "a8de41f86fa68dcfd3bd3b2cc9dc638090404cce",
+      "taken_at": "2026-09-12T00:39:22.065167+00:00",
+      "commit": "a0da09175fb93547031eb428831b53eda525b96e",
       "commands": {
         "python3 -m pytest -q": {
           "exit_code": 1,
