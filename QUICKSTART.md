@@ -14,7 +14,10 @@ the agent changes — and keeps that repo's tickets, locks and evidence under
 Into the target repo's environment:
 
     pip install -r requirements-gate.txt      # the gate's pins, exact
-    export PYTHONPATH=/path/to/this/repo      # until the package is installable
+    pip install git+https://github.com/Cognome-Inc/edad_harness@v0.1.0   # the harness, pinned
+
+Developing the harness itself? Install your checkout editable instead, so
+edits are live: `pip install -e /path/to/edad_harness`.
 
 The target repo needs, at its root:
 
