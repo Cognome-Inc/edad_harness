@@ -1430,6 +1430,6 @@ def test_the_logless_breaker_is_recorded_as_a_breaker_not_a_failure(monkeypatch,
             f"{log['tickets'][untouched]['status']!r} sends the morning to debug it"
         )
     assert set(log) == {
-        "started_at", "elapsed_s", "sandbox", "network", "tickets",
+        "started_at", "elapsed_s", "sandbox", "network", "harness", "tickets",
         "breaker", "stopped_because", "final_gate",
     }, "as_log's shape does not otherwise change"

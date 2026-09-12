@@ -205,6 +205,8 @@ class Record:
     # either answer: "we could not tell" is its own result, and treating it as
     # "nothing new" is exactly how a ratchet certifies a regression.
     uncomparable_failures: list[str] = field(default_factory=list)
+    harness: dict = field(default_factory=dict)
+    toolchain: dict = field(default_factory=dict)
 
     @property
     def pre_existing_only(self) -> bool:
@@ -635,6 +637,34 @@ def gate_toolchain_problems(root: Path) -> list[str]:
         elif found != pinned:
             problems.append(f"{name}: {found}, pinned {pinned}")
     return problems
+
+
+def toolchain_versions(root: Path) -> dict:
+    return {}
+
+
+def identify_harness(version, direct_url, head, dirty) -> dict:
+    return {}
+
+
+def harness_metadata() -> tuple[str | None, dict | None]:
+    return None, None
+
+
+def harness_checkout() -> Path | None:
+    return None
+
+
+def harness_head(checkout: Path) -> str | None:
+    return None
+
+
+def harness_dirty(checkout: Path) -> bool | None:
+    return None
+
+
+def harness_identity() -> dict:
+    return {}
 
 
 def _command_prefix(cmd: str, n: int = 3) -> tuple[str, ...]:
