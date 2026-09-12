@@ -1,0 +1,79 @@
+{
+  "tests/test_packaging.py": "3351f747f6e955888ed77c1ecce293a7d3b233b90c4fb738ab6ac7aa4eb237d7",
+  "_edad": {
+    "approved_at": "2026-09-12T00:31:47.402826+00:00",
+    "ticket_sha256": "0188296c708e22b3f6a1d62fd4d95226ec06c3ac5cee8847a438644e34f83f88",
+    "decisions": [
+      "D1",
+      "D2",
+      "D3",
+      "D5"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_packaging.py::test_build_system_is_setuptools -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_packaging.py::test_build_system_is_setuptools"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_packaging.py::test_project_metadata_names_the_distribution -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_packaging.py::test_project_metadata_names_the_distribution"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_packaging.py::test_packages_is_exactly_edad -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_packaging.py::test_packages_is_exactly_edad"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_packaging.py::test_pyyaml_is_the_only_dependency_and_is_loose -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_packaging.py::test_pyyaml_is_the_only_dependency_and_is_loose"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_packaging.py::test_quickstart_installs_by_pip_not_pythonpath -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_packaging.py::test_quickstart_installs_by_pip_not_pythonpath"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_packaging.py::test_quickstart_pinned_tag_matches_project_version -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_packaging.py::test_quickstart_pinned_tag_matches_project_version"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-09-12T00:31:46.356625+00:00",
+      "commit": "a8de41f86fa68dcfd3bd3b2cc9dc638090404cce",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_packaging.py::test_build_system_is_setuptools": 1,
+            "pytest:tests/test_packaging.py::test_project_metadata_names_the_distribution": 1,
+            "pytest:tests/test_packaging.py::test_packages_is_exactly_edad": 1,
+            "pytest:tests/test_packaging.py::test_pyyaml_is_the_only_dependency_and_is_loose": 1,
+            "pytest:tests/test_packaging.py::test_quickstart_installs_by_pip_not_pythonpath": 1,
+            "pytest:tests/test_packaging.py::test_quickstart_pinned_tag_matches_project_version": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    }
+  }
+}
