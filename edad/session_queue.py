@@ -74,7 +74,7 @@ from pathlib import Path
 # `ensure_egress_proxy`, `validate_network` and `remove_egress_proxy` *here*
 # to observe the order a docker night reaches them in.
 from edad.egress import EgressError, ensure_egress_proxy, remove_egress_proxy
-from edad.gate import check_freeze, load_ticket, repo_root, run_commands
+from edad.gate import check_freeze, harness_identity, load_ticket, repo_root, run_commands
 from edad.session import MAX_NO_PROGRESS, PROMOTED_OUTCOMES, Abort, validate_network
 
 # D23. How long any one command of the final gate may run.
@@ -615,15 +615,16 @@ class RunState:
     than a reconstruction from N session logs.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913  # the night's own knobs, passed through; not five jobs
         self, plan: Plan, tickets: dict[str, dict], budget_s: float | None = None,
-        sandbox: str = "none", network: str | None = None,
+        sandbox: str = "none", network: str | None = None, harness: dict | None = None,
     ):
         self.plan = plan
         self.tickets = tickets
         self.budget_s = budget_s
         self.sandbox = sandbox
         self.network = network
+        self.harness = harness or {}
         self.started_at = datetime.now(UTC).isoformat(timespec="seconds")
         # monotonic, because the budget is a duration: a clock stepped by NTP
         # or by a DST change mid-night would otherwise fire the breaker, or
@@ -741,6 +742,7 @@ class RunState:
             "elapsed_s": round(self.elapsed_s(), 3),
             "sandbox": self.sandbox,
             "network": self.network,
+            "harness": self.harness,
             "tickets": tickets,
             "breaker": self.breaker,
             "stopped_because": self.stopped_because,
@@ -1127,7 +1129,10 @@ def run_queue(
                 f"could not cut {run_branch} from {MAIN_BRANCH}: {(e.stderr or e.stdout).strip()}"
             ) from e
 
-    state = RunState(plan, tickets, budget_s=budget_s, sandbox=sandbox, network=network)
+    state = RunState(
+        plan, tickets, budget_s=budget_s, sandbox=sandbox, network=network,
+        harness=harness_identity(),
+    )
     created = Created()
 
     try:

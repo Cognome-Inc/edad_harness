@@ -52,6 +52,7 @@ from edad.gate import (
     frozen_blocks,
     gate_toolchain_problems,
     git,
+    harness_identity,
     load_ticket,
     repo_root,
     write_record,
@@ -846,6 +847,7 @@ class SessionLog:
     network: str | None = None
     network_access: dict = field(default_factory=dict)
     permissions: dict = field(default_factory=dict)
+    harness: dict = field(default_factory=dict)
     outcome: str = "incomplete"
     abort_reason: str | None = None
     iterations: list[Iteration] = field(default_factory=list)
@@ -978,6 +980,7 @@ def run_session(root: Path, ticket: dict, args) -> int:  # noqa: PLR0915  # line
         network=args.network,
         network_access=deny_enforcement(ticket, args.sandbox),
         permissions=permissions(args.sandbox, args.yolo, ticket),
+        harness=harness_identity(),
     )
 
     prompt = initial_prompt(ticket, args.sandbox, args.network)

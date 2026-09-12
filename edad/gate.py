@@ -34,9 +34,12 @@ import uuid
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
+from importlib import metadata as importlib_metadata
 from pathlib import Path
 
 import yaml
+
+import edad
 
 TAIL_CHARS = 4000
 
@@ -600,6 +603,28 @@ def _probe_versions(root: Path, name: str) -> tuple[str | None, str | None]:
     return meta, on_path
 
 
+def _pinned_versions(root: Path) -> list[tuple[str, str]]:
+    """(name, pinned version) for every `==` line in requirements-gate.txt, in
+    file order. Empty when the file is absent.
+
+    The one pass over the file, shared by gate_toolchain_problems and
+    toolchain_versions, so the pins the check measured against and the pins a
+    record says it measured against cannot silently diverge into two readings
+    of the same file.
+    """
+    req = root / "requirements-gate.txt"
+    if not req.exists():
+        return []
+    pins = []
+    for raw in req.read_text().splitlines():
+        line = raw.split("#")[0].strip()
+        if "==" not in line:
+            continue
+        name, _, pinned = line.partition("==")
+        pins.append((name.strip(), pinned.strip()))
+    return pins
+
+
 def gate_toolchain_problems(root: Path) -> list[str]:
     """Compare the versions the GATE will resolve against requirements-gate.txt.
 
@@ -610,16 +635,8 @@ def gate_toolchain_problems(root: Path) -> list[str]:
     acceptance commands "fail" for the wrong reason, which reads as red and
     would let a vacuous test through the check below.
     """
-    req = root / "requirements-gate.txt"
-    if not req.exists():
-        return []
     problems = []
-    for raw in req.read_text().splitlines():
-        line = raw.split("#")[0].strip()
-        if "==" not in line:
-            continue
-        name, _, pinned = line.partition("==")
-        name, pinned = name.strip(), pinned.strip()
+    for name, pinned in _pinned_versions(root):
         meta, on_path = _probe_versions(root, name)
         found = meta or on_path
         if found is None:
@@ -640,31 +657,115 @@ def gate_toolchain_problems(root: Path) -> list[str]:
 
 
 def toolchain_versions(root: Path) -> dict:
-    return {}
+    """{name: measured version} for every pin in requirements-gate.txt.
+
+    `measured` is exactly what the pin check compares against the pin - `meta
+    or on_path` from the same `_probe_versions` call - so a record can never
+    claim a measurement the check itself did not make.
+    """
+    versions: dict[str, str | None] = {}
+    for name, _ in _pinned_versions(root):
+        meta, on_path = _probe_versions(root, name)
+        versions[name] = meta or on_path
+    return versions
 
 
 def identify_harness(version, direct_url, head, dirty) -> dict:
-    return {}
+    """The pure core: which install mode `version`/`direct_url`/`head`/`dirty`
+    describe, and what each mode trusts as the commit and the version.
+
+    A `direct_url.json` naming a VCS install is pip's own record of the commit
+    it built from; there is no checkout for `dirty` to describe, so it is null
+    rather than False. An editable install's `version` is a fixed label the
+    package metadata assigns regardless of what is checked out, so the commit
+    and its dirtiness come from git instead. With neither, a `head` still
+    identifies a bare checkout - but a `version` with no `direct_url` behind it
+    is not trusted as a label: an earlier `pip install -e` can leave a stale
+    `egg-info` that answers a version from the cwd forever after.
+    """
+    if isinstance(direct_url, dict) and isinstance(direct_url.get("vcs_info"), dict):
+        return {
+            "version": version,
+            "commit": direct_url["vcs_info"].get("commit_id"),
+            "dirty": None,
+            "source": "vcs",
+        }
+    if (
+        isinstance(direct_url, dict)
+        and isinstance(direct_url.get("dir_info"), dict)
+        and direct_url["dir_info"].get("editable")
+    ):
+        return {"version": version, "commit": head, "dirty": dirty, "source": "editable"}
+    if head:
+        return {"version": None, "commit": head, "dirty": dirty, "source": "checkout"}
+    return {"version": None, "commit": None, "dirty": None, "source": "unknown"}
 
 
 def harness_metadata() -> tuple[str | None, dict | None]:
-    return None, None
+    """(version, direct_url.json parsed) for the `edad-harness` distribution.
+
+    May raise - PackageNotFoundError on an uninstalled tree, or anything else
+    importlib.metadata throws on a broken environment. harness_identity is the
+    one that catches; this stays a plain read so its failure mode is exactly
+    what importlib.metadata's is.
+    """
+    dist = importlib_metadata.distribution("edad-harness")
+    text = dist.read_text("direct_url.json")
+    direct_url = json.loads(text) if text else None
+    return dist.version, direct_url
 
 
 def harness_checkout() -> Path | None:
-    return None
+    """This module's own repository root, when it has one.
+
+    `edad/__init__.py`'s parent's parent: two levels up from `edad/gate.py`.
+    None when nothing is installed from a checkout at all - the file lives
+    somewhere pip unpacked it, with no `.git` above it.
+    """
+    root = Path(edad.__file__).resolve().parents[1]
+    return root if (root / ".git").exists() else None
 
 
 def harness_head(checkout: Path) -> str | None:
-    return None
+    return git(checkout, "rev-parse", "HEAD")
 
 
 def harness_dirty(checkout: Path) -> bool | None:
-    return None
+    return bool(git_raw(checkout, "status", "--porcelain", "--untracked-files=no"))
 
 
 def harness_identity() -> dict:
-    return {}
+    """Gather what this running harness can say about itself, and hand it to
+    the pure core. Never raises: identity is something the harness reports
+    about itself, never a precondition of running.
+
+    Each seam fails on its own - a broken metadata read must not stop git from
+    being asked, and a broken git must not hide metadata that did answer.
+    """
+    version, direct_url = None, None
+    try:
+        version, direct_url = harness_metadata()
+    except Exception:
+        pass
+
+    checkout = None
+    try:
+        checkout = harness_checkout()
+    except Exception:
+        pass
+
+    head, dirty = None, None
+    if checkout is not None:
+        try:
+            head = harness_head(checkout)
+        except Exception:
+            head = None
+        try:
+            dirty = harness_dirty(checkout)
+        except Exception:
+            dirty = None
+
+    return identify_harness(version, direct_url, head, dirty)
 
 
 def _command_prefix(cmd: str, n: int = 3) -> tuple[str, ...]:
@@ -1489,6 +1590,11 @@ def cmd_approve(args) -> int:
         # this at promotion so a pre-existing failure is attributed to the repo
         # rather than to the agent.
         "full_gate_baseline": baseline,
+        # Who measured the red proof and the baseline above, and under what
+        # toolchain - a lock records a measurement, and a measurement was
+        # always made by some harness under some toolchain.
+        "harness": harness_identity(),
+        "toolchain": toolchain_versions(root),
     }
     out = root / ".edad" / "hashes" / f"{ticket['id']}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -1522,6 +1628,8 @@ def evaluate(
         freeze_ok=True,
         commands_ok=False,
         scope_enforced=bool(kills.get("diff_touches_outside_scope", True)),
+        harness=harness_identity(),
+        toolchain=toolchain_versions(root),
     )
 
     meta = approval_meta(root, ticket["id"])
