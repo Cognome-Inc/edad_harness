@@ -1,0 +1,94 @@
+{
+  "ticket": "T018",
+  "started_at": "2026-09-12T00:39:55.645793+00:00",
+  "commit": "9ce335f14f2fede4954a6076ab2f53688b02dceb",
+  "base_ref": "a0da09175fb93547031eb428831b53eda525b96e",
+  "gate": "full_gate",
+  "freeze_ok": true,
+  "commands_ok": true,
+  "scope_violations": [],
+  "scope_enforced": true,
+  "violations": [],
+  "changed_files": [
+    "QUICKSTART.md",
+    "pyproject.toml"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest -q",
+      "exit_code": 0,
+      "duration_s": 17.82,
+      "output_tail": "........................................................................ [ 32%]\n........................................................................ [ 65%]\n........................................................................ [ 97%]\n.....                                                                    [100%]\n221 passed in 17.42s\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "duration_s": 0.05,
+      "output_tail": "All checks passed!\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    }
+  ],
+  "decisions": [
+    "D1",
+    "D2",
+    "D3",
+    "D5"
+  ],
+  "red_proof": [
+    {
+      "command": "python3 -m pytest tests/test_packaging.py::test_build_system_is_setuptools -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_packaging.py::test_build_system_is_setuptools"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_packaging.py::test_project_metadata_names_the_distribution -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_packaging.py::test_project_metadata_names_the_distribution"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_packaging.py::test_packages_is_exactly_edad -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_packaging.py::test_packages_is_exactly_edad"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_packaging.py::test_pyyaml_is_the_only_dependency_and_is_loose -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_packaging.py::test_pyyaml_is_the_only_dependency_and_is_loose"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_packaging.py::test_quickstart_installs_by_pip_not_pythonpath -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_packaging.py::test_quickstart_installs_by_pip_not_pythonpath"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_packaging.py::test_quickstart_pinned_tag_matches_project_version -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_packaging.py::test_quickstart_pinned_tag_matches_project_version"
+      ]
+    }
+  ],
+  "mutation_proof": null,
+  "approved": true,
+  "ticket_verified": true,
+  "baseline_commit": null,
+  "new_failures": {},
+  "uncomparable_failures": [],
+  "passed": true,
+  "passed_modulo_baseline": false
+}

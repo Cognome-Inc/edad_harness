@@ -1,9 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "edad-harness"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["PyYAML>=6.0"]
+
+[tool.setuptools]
+packages = ["edad"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+# Pinned so the linter's view of the stdlib does not change when [project]
+# gains requires-python: without it ruff files `tomllib` as third-party today and
+# as stdlib tomorrow, and a frozen test's import order becomes a lint error in a
+# file no ticket may edit.
+target-version = "py312"
 
 [tool.ruff.lint]
 # Pinned explicitly. Ruff's defaults change between releases, so an unpinned

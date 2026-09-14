@@ -33,7 +33,7 @@ import time
 import uuid
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
@@ -769,7 +769,7 @@ def build_baseline(root: Path, results: list[CommandResult]) -> dict:
     rather than leaving a reader to assume it was current.
     """
     return {
-        "taken_at": datetime.now(timezone.utc).isoformat(),
+        "taken_at": datetime.now(UTC).isoformat(),
         "commit": git(root, "rev-parse", "HEAD"),
         "commands": {
             c.command: {"exit_code": c.exit_code, "keys": c.failure_keys}
@@ -1435,7 +1435,7 @@ def cmd_approve(args) -> int:
     lock = dict(hashes)
     # Reserved key: frozen entries are relative paths and never collide with it.
     lock[LOCK_META_KEY] = {
-        "approved_at": datetime.now(timezone.utc).isoformat(),
+        "approved_at": datetime.now(UTC).isoformat(),
         # The ticket file's own bytes, so the contract is tamper-evident and not
         # just the tests it points at. Everything else in this block is data
         # copied OUT of the ticket; this is what makes the ticket itself
@@ -1485,7 +1485,7 @@ def evaluate(
 
     rec = Record(
         ticket=ticket["id"],
-        started_at=datetime.now(timezone.utc).isoformat(),
+        started_at=datetime.now(UTC).isoformat(),
         commit=git(root, "rev-parse", "HEAD"),
         base_ref=base_ref,
         gate=gate_name,
