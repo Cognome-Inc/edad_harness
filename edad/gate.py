@@ -654,7 +654,11 @@ def toolchain_problems(measurements: list[Measurement]) -> list[str]:
     for m in measurements:
         found = m.meta or m.on_path
         if found is None:
-            where = "the gate's python3 or PATH" if m.name in VERSION_PROBES else "the gate's python3"
+            where = (
+                "the gate's python3 or PATH"
+                if m.name in VERSION_PROBES
+                else "the gate's python3"
+            )
             problems.append(f"{m.name}: not found on {where} (pinned {m.pinned})")
         elif m.meta and m.on_path and m.meta != m.on_path:
             # Neither is wrong; they disagree, and which one runs depends on how
