@@ -18,6 +18,16 @@ through `evaluate`, `write_record` and `cmd_approve`, the way the red-proof test
 drive approve. The log tests (D5) read field order off `asdict(SessionLog)` and
 `RunState.as_log()`, the T017 precedent. D6 reads `QUICKSTART.md` as text, as the
 packaging tests do.
+
+The toolchain-measurement ticket amends this file before re-freezing it. The
+record and lock tests now steer the toolchain by faking `measure_toolchain` with a
+list of `Measurement`s - the one module-level name both `evaluate` and
+`cmd_approve` read - because after that ticket neither caller touches
+`toolchain_versions` or `gate_toolchain_problems`, and a fake of either would be
+inert. Its own tests follow: the measurement is taken once per command and the
+record's block *is* that measurement; a mismatch refuses before anything runs; the
+two readers turn every on-disk shape into one; `report()` and `approve` print
+what the readers see; the quickstart names the fields.
 """
 
 from __future__ import annotations
@@ -27,6 +37,8 @@ import json
 import re
 from dataclasses import asdict
 from pathlib import Path
+
+import pytest
 
 from edad import gate
 from edad.gate import CommandResult, cmd_approve, evaluate, write_record
@@ -81,6 +93,64 @@ class FakeRun:
             exit_code, text, killed = self.table.get(c, (0, "", False))
             out.append(CommandResult(c, exit_code, 0.1, text, [], killed, None))
         return out
+
+
+def measured(**overrides) -> list:
+    """A `Measurement` per sentinel pin, satisfied: importable at the pinned
+    version, nothing on PATH. `overrides` swaps one name's (meta, on_path)."""
+    return [
+        gate.Measurement(name, ver, *overrides.get(name, (ver, None)))
+        for name, ver in TOOLCHAIN.items()
+    ]
+
+
+class FakeMeasure:
+    """Stands in for `measure_toolchain`, counting calls: one measurement per
+    command is the property, and a count is what a cache lifetime is not."""
+
+    def __init__(self, measurements: list):
+        self.measurements = measurements
+        self.calls = 0
+
+    def __call__(self, root):
+        self.calls += 1
+        return list(self.measurements)
+
+
+def write_ticket(tmp_path: Path) -> None:
+    """A repo the way the lock test needs one: the ticket, its frozen file, and
+    the directories `cmd_approve` writes under."""
+    (tmp_path / ".edad" / "tickets").mkdir(parents=True)
+    (tmp_path / "tests").mkdir()
+    (tmp_path / FROZEN).write_text("# the frozen test\n")
+    (tmp_path / ".edad" / "tickets" / "T900.md").write_text(
+        "---\n"
+        "id: T900\n"
+        f"frozen:\n  - {FROZEN}\n"
+        "scope:\n  - edad/thing.py\n"
+        f"acceptance:\n  - {ACC}\n"
+        "---\n\nbody\n"
+    )
+
+
+def approve_fakes(monkeypatch, tmp_path: Path) -> None:
+    """Everything `cmd_approve` shells to, faked the way the red-proof tests do:
+    the repo is `tmp_path`, the probe finds nothing, the red is a real FAILED."""
+    monkeypatch.setattr(gate, "repo_root", lambda: tmp_path)
+    monkeypatch.setattr(gate, "run_full_gate_probe", lambda root, ticket: [])
+    monkeypatch.setattr(gate, "run_commands", FakeRun({ACC: (1, failed(NODE), False)}))
+    monkeypatch.setattr(gate, "harness_identity", lambda: dict(HARNESS))
+
+
+def evaluate_fakes(monkeypatch) -> None:
+    """Everything `evaluate` reaches beyond the toolchain, faked as the record
+    test always has."""
+    monkeypatch.setattr(gate, "harness_identity", lambda: dict(HARNESS))
+    monkeypatch.setattr(gate, "git", lambda root, *args: HEAD)
+    monkeypatch.setattr(gate, "approval_meta", lambda root, ticket_id: {})
+    monkeypatch.setattr(gate, "check_freeze", lambda root, ticket: (True, []))
+    monkeypatch.setattr(gate, "changed_files", lambda root, base_ref: [])
+    monkeypatch.setattr(gate, "run_commands", FakeRun())
 
 
 def failed(*nodes: str) -> str:
@@ -168,8 +238,9 @@ def test_the_gatherer_never_raises_and_degrades_to_unknown(monkeypatch, tmp_path
 
 def test_toolchain_versions_stores_what_the_pin_check_measures(monkeypatch, tmp_path):
     """One entry per `==` line in requirements-gate.txt, null when the probe found
-    nothing, and the same `_probe_versions` call the pin check makes - so the
-    record and the check cannot disagree about what was measured."""
+    nothing, and one `_probe_versions` call per pinned name - the wrappers over
+    `measure_toolchain` each take one measurement, and the check's messages are
+    unchanged by the extraction."""
     (tmp_path / "requirements-gate.txt").write_text(
         "# the gate's pins\n"
         "pytest==8.4.2\n"
@@ -206,14 +277,10 @@ def test_toolchain_versions_stores_what_the_pin_check_measures(monkeypatch, tmp_
 def test_the_written_record_carries_harness_and_toolchain(monkeypatch, tmp_path):
     """`evaluate` is the single entry point for anything that needs a verdict, so
     the block is populated there and nowhere else; `write_record`'s payload
-    carries it through to disk, after `uncomparable_failures`."""
-    monkeypatch.setattr(gate, "harness_identity", lambda: dict(HARNESS))
-    monkeypatch.setattr(gate, "toolchain_versions", lambda root: dict(TOOLCHAIN))
-    monkeypatch.setattr(gate, "git", lambda root, *args: HEAD)
-    monkeypatch.setattr(gate, "approval_meta", lambda root, ticket_id: {})
-    monkeypatch.setattr(gate, "check_freeze", lambda root, ticket: (True, []))
-    monkeypatch.setattr(gate, "changed_files", lambda root, base_ref: [])
-    monkeypatch.setattr(gate, "run_commands", FakeRun())
+    carries it through to disk, after `uncomparable_failures`. The toolchain is
+    steered through `measure_toolchain`, the one name `evaluate` reads."""
+    evaluate_fakes(monkeypatch)
+    monkeypatch.setattr(gate, "measure_toolchain", FakeMeasure(measured()))
 
     rec = evaluate(tmp_path, TICKET)
     assert rec.harness == HARNESS
@@ -229,24 +296,11 @@ def test_the_written_record_carries_harness_and_toolchain(monkeypatch, tmp_path)
 
 def test_the_lock_records_harness_and_toolchain_at_approval(monkeypatch, tmp_path):
     """The red proof and the baseline are measurements too, made by some harness
-    under some toolchain. The lock's `_edad` block says which."""
-    (tmp_path / ".edad" / "tickets").mkdir(parents=True)
-    (tmp_path / "tests").mkdir()
-    (tmp_path / FROZEN).write_text("# the frozen test\n")
-    (tmp_path / ".edad" / "tickets" / "T900.md").write_text(
-        "---\n"
-        "id: T900\n"
-        f"frozen:\n  - {FROZEN}\n"
-        "scope:\n  - edad/thing.py\n"
-        f"acceptance:\n  - {ACC}\n"
-        "---\n\nbody\n"
-    )
-    monkeypatch.setattr(gate, "repo_root", lambda: tmp_path)
-    monkeypatch.setattr(gate, "gate_toolchain_problems", lambda root: [])
-    monkeypatch.setattr(gate, "run_full_gate_probe", lambda root, ticket: [])
-    monkeypatch.setattr(gate, "run_commands", FakeRun({ACC: (1, failed(NODE), False)}))
-    monkeypatch.setattr(gate, "harness_identity", lambda: dict(HARNESS))
-    monkeypatch.setattr(gate, "toolchain_versions", lambda root: dict(TOOLCHAIN))
+    under some toolchain. The lock's `_edad` block says which. The toolchain is
+    steered through `measure_toolchain`, the one name `cmd_approve` reads."""
+    write_ticket(tmp_path)
+    approve_fakes(monkeypatch, tmp_path)
+    monkeypatch.setattr(gate, "measure_toolchain", FakeMeasure(measured()))
 
     args = argparse.Namespace(ticket="T900", allow_passing=False, rebaseline=False)
     assert cmd_approve(args) == 0
@@ -308,3 +362,203 @@ def test_quickstart_has_a_releasing_section_naming_the_tag_step():
     assert "pyproject.toml" in section, "the bump is not named"
     assert "git tag" in section, "the tag step is not named"
     assert "git push" in section, "pushing the tag is not named"
+
+
+# ==== toolchain-measurement: the measurement is a value, and it is read ===========
+
+
+# --- D1: evaluate measures once, refuses a mismatch, records the measurement -------
+
+
+def test_evaluate_measures_the_toolchain_once_and_records_it(monkeypatch, tmp_path):
+    """One `measure_toolchain` call per verdict, and the record's block is
+    `versions_of` that call - not a second probe that happened to agree."""
+    evaluate_fakes(monkeypatch)
+    measure = FakeMeasure(measured())
+    monkeypatch.setattr(gate, "measure_toolchain", measure)
+
+    rec = evaluate(tmp_path, TICKET)
+
+    assert measure.calls == 1, "measured once, for the check and the record together"
+    assert gate.toolchain_problems(measure.measurements) == [], "the fixture is satisfied"
+    assert rec.toolchain == gate.versions_of(measure.measurements) == TOOLCHAIN
+
+
+def test_evaluate_refuses_a_toolchain_mismatch_before_running_anything(
+    monkeypatch, tmp_path, capsys
+):
+    """A hand-run gate on the wrong pytest dies the way approve and preflight do,
+    with the check's own message, before any command runs and before the Record
+    is built - so no record ever says a mismatched toolchain was measured."""
+    evaluate_fakes(monkeypatch)
+    monkeypatch.setattr(gate, "measure_toolchain", FakeMeasure(measured(pytest=("0.0.9", None))))
+    # Identity is gathered when the Record is built; a command run is the gate
+    # proper. Neither may happen on a mismatch.
+    monkeypatch.setattr(gate, "harness_identity", boom)
+    monkeypatch.setattr(gate, "run_commands", boom)
+
+    with pytest.raises(SystemExit) as exc:
+        evaluate(tmp_path, TICKET)
+
+    assert exc.value.code == 2
+    err = capsys.readouterr().err
+    assert "does not match requirements-gate.txt" in err, "approve's message, verbatim"
+    assert "pytest: 0.0.9, pinned 0.0.1" in err, "the check's problem line, unchanged"
+
+
+# --- D2: the measurement is a value; one measurement per approve ------------------
+
+
+def test_measure_toolchain_probes_each_pin_once_in_file_order(monkeypatch, tmp_path):
+    """One file pass and one `_probe_versions` call per pinned name, carried as
+    values the two readers consume; the check's messages are unchanged; `[]`
+    when there is no pins file, which is a real answer - a target that pins
+    nothing measures nothing - and not an error."""
+    (tmp_path / "requirements-gate.txt").write_text(
+        "pytest==8.4.2\n"
+        "ruff==0.15.18   # trailing comment\n"
+        "PyYAML==6.0.2\n"
+        "loose>=1.0\n"
+    )
+    seen = {"pytest": ("8.4.2", "8.4.2"), "ruff": (None, None), "PyYAML": ("6.0.2", None)}
+    probed: list[str] = []
+
+    def probe(root, name):
+        probed.append(name)
+        return seen[name]
+
+    monkeypatch.setattr(gate, "_probe_versions", probe)
+
+    ms = gate.measure_toolchain(tmp_path)
+    assert probed == ["pytest", "ruff", "PyYAML"], "one probe per pinned name, in file order"
+    assert [(m.name, m.pinned, m.meta, m.on_path) for m in ms] == [
+        ("pytest", "8.4.2", "8.4.2", "8.4.2"),
+        ("ruff", "0.15.18", None, None),
+        ("PyYAML", "6.0.2", "6.0.2", None),
+    ]
+    assert gate.versions_of(ms) == {"pytest": "8.4.2", "ruff": None, "PyYAML": "6.0.2"}
+    problems = gate.toolchain_problems(ms)
+    assert len(problems) == 1 and problems[0].startswith("ruff: not found"), problems
+    assert gate.measure_toolchain(tmp_path / "nowhere") == [], "no pins file, nothing measured"
+    assert probed == ["pytest", "ruff", "PyYAML"], "measuring nothing probes nothing"
+
+
+
+def test_approve_measures_the_toolchain_once_for_check_and_lock(monkeypatch, tmp_path):
+    """The check that refuses a broken toolchain and the block the lock records are
+    two readings of one measurement, not two probes."""
+    write_ticket(tmp_path)
+    approve_fakes(monkeypatch, tmp_path)
+    measure = FakeMeasure(measured())
+    monkeypatch.setattr(gate, "measure_toolchain", measure)
+
+    args = argparse.Namespace(ticket="T900", allow_passing=False, rebaseline=False)
+    assert cmd_approve(args) == 0
+
+    assert measure.calls == 1, "measured once, for the check and the lock together"
+    lock = json.loads((tmp_path / ".edad" / "hashes" / "T900.json").read_text())
+    assert lock["_edad"]["toolchain"] == gate.versions_of(measure.measurements) == TOOLCHAIN
+
+
+# --- D3: the readers -----------------------------------------------------------------
+
+
+def test_harness_of_reads_absent_empty_partial_and_full_blocks_as_one_shape():
+    """Three generations are on disk - no key (T001-T018, every lock), `{}`
+    (T019's own evidence), the four-key block - and a lock can carry three of
+    the four keys. One reader gives all of them the same shape, keeps what a
+    partial block did record, never raises, and never writes."""
+    full = dict(HARNESS)
+    partial = {"version": None, "commit": HEAD, "source": "bare"}
+
+    assert gate.harness_of({}) == UNKNOWN, "no key"
+    assert gate.harness_of({"harness": {}}) == UNKNOWN, "T019.json's `{}` reads as unknown"
+    assert gate.harness_of({"harness": None}) == UNKNOWN
+    assert gate.harness_of({"harness": "vcs"}) == UNKNOWN, "a non-dict is not a block"
+    assert gate.harness_of({"harness": full}) == full
+    assert gate.harness_of({"harness": partial}) == {
+        "version": None, "commit": HEAD, "dirty": None, "source": "bare",
+    }, "a partial block keeps the commit it recorded"
+    assert gate.harness_of({"harness": {"commit": HEAD, "dirty": False}}) == {
+        "version": None, "commit": HEAD, "dirty": False, "source": "unknown",
+    }, "no source says how to read the commit, not that there was none"
+    assert list(gate.harness_of({"harness": {**full, "host": "x"}})) == [
+        "version", "commit", "dirty", "source",
+    ], "exactly the four keys, in the record's order"
+
+    assert gate.toolchain_of({}) == {}
+    assert gate.toolchain_of({"toolchain": {}}) == {}
+    assert gate.toolchain_of({"toolchain": None}) == {}
+    assert gate.toolchain_of({"toolchain": dict(TOOLCHAIN)}) == TOOLCHAIN
+
+    artifact = {"harness": {}, "toolchain": {}}
+    gate.harness_of(artifact)
+    gate.toolchain_of(artifact)
+    assert artifact == {"harness": {}, "toolchain": {}}, "normalising on read is not backfilling"
+
+
+# --- D5, D6: what is printed ---------------------------------------------------------
+
+
+def report_line(out: str, label: str) -> str:
+    lines = [ln.strip() for ln in out.splitlines() if ln.strip().startswith(label)]
+    assert len(lines) == 1, f"expected one `{label}` line, got {lines!r} in:\n{out}"
+    return lines[0]
+
+
+def test_report_prints_the_harness_and_toolchain_lines(monkeypatch, tmp_path, capsys):
+    """After `decisions`: who measured, and with what - through the readers, so a
+    record from before the blocks existed prints `unknown` rather than crashing."""
+    evaluate_fakes(monkeypatch)
+    monkeypatch.setattr(gate, "measure_toolchain", FakeMeasure(measured()))
+    rec = evaluate(tmp_path, TICKET)
+
+    gate.report(rec)
+    out = capsys.readouterr().out
+    harness = report_line(out, "harness")
+    assert "vcs" in harness and HARNESS["commit"][:8] in harness and "v9.9.9" in harness
+    assert "dirty" not in harness, "a tag install has no checkout to be dirty"
+    toolchain = report_line(out, "toolchain")
+    assert "pytest 0.0.1" in toolchain and "ruff 0.0.2" in toolchain and "PyYAML 0.0.3" in toolchain
+
+    rec.harness = {"version": None, "commit": HEAD, "dirty": True, "source": "editable"}
+    gate.report(rec)
+    harness = report_line(capsys.readouterr().out, "harness")
+    assert "editable" in harness and HEAD[:8] in harness and "dirty" in harness
+    assert "v" + "None" not in harness and " v" not in harness, "no version, no version label"
+
+    rec.harness, rec.toolchain = {}, {}
+    gate.report(rec)
+    out = capsys.readouterr().out
+    assert "unknown" in report_line(out, "harness")
+    assert "unknown" in report_line(out, "toolchain")
+
+
+def test_approve_prints_the_harness_line(monkeypatch, tmp_path, capsys):
+    """The operator taking a red proof sees who measured it, on the same line
+    `report()` prints, after the frozen-file hashes."""
+    write_ticket(tmp_path)
+    approve_fakes(monkeypatch, tmp_path)
+    monkeypatch.setattr(gate, "measure_toolchain", FakeMeasure(measured()))
+
+    args = argparse.Namespace(ticket="T900", allow_passing=False, rebaseline=False)
+    assert cmd_approve(args) == 0
+
+    out = capsys.readouterr().out
+    harness = report_line(out, "harness")
+    assert "vcs" in harness and HARNESS["commit"][:8] in harness and "v9.9.9" in harness
+    assert out.index(FROZEN) < out.index(harness), "after the hashes, not before"
+
+
+# --- D7: the quickstart names the fields ---------------------------------------------
+
+
+def test_quickstart_evidence_section_names_harness_and_toolchain():
+    """`## Releasing` already leans on `harness.commit`; the section that
+    describes the record is where a reader learns the field exists."""
+    text = (PROJECT_ROOT / "QUICKSTART.md").read_text()
+    m = re.search(r"^## Evidence[ \t]*$(.*?)(?=^## |\Z)", text, re.MULTILINE | re.DOTALL)
+    assert m, "QUICKSTART.md has no `## Evidence` section"
+    section = m.group(1)
+    assert "harness" in section, "the harness field is not named"
+    assert "toolchain" in section, "the toolchain field is not named"

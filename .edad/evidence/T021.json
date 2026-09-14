@@ -1,0 +1,82 @@
+{
+  "ticket": "T021",
+  "started_at": "2026-09-14T17:28:50.423401+00:00",
+  "commit": "47541f249aa2cf80432a2c06605b977675fe3236",
+  "base_ref": "440475e919d4b91ddecd61109addcc830e84475a",
+  "gate": "full_gate",
+  "freeze_ok": true,
+  "commands_ok": true,
+  "scope_violations": [],
+  "scope_enforced": true,
+  "violations": [],
+  "changed_files": [
+    "edad/gate.py",
+    "edad/session.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest -q",
+      "exit_code": 0,
+      "duration_s": 49.86,
+      "output_tail": "........................................................................ [ 29%]\n........................................................................ [ 59%]\n........................................................................ [ 88%]\n...........................                                              [100%]\n243 passed in 49.22s\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "duration_s": 0.1,
+      "output_tail": "All checks passed!\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    }
+  ],
+  "decisions": [
+    "D1",
+    "D2"
+  ],
+  "red_proof": [
+    {
+      "command": "python3 -m pytest tests/test_gate_refusal.py::test_die_raises_a_refusal_that_is_still_an_exit_2 -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_refusal.py::test_die_raises_a_refusal_that_is_still_an_exit_2"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_refusal.py::test_a_refusal_at_the_acceptance_gate_is_logged_as_aborted_with_its_reason -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_refusal.py::test_a_refusal_at_the_acceptance_gate_is_logged_as_aborted_with_its_reason"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_refusal.py::test_a_refusal_at_the_full_gate_is_logged_the_same_way -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_refusal.py::test_a_refusal_at_the_full_gate_is_logged_the_same_way"
+      ]
+    }
+  ],
+  "mutation_proof": null,
+  "approved": true,
+  "ticket_verified": true,
+  "baseline_commit": null,
+  "new_failures": {},
+  "uncomparable_failures": [],
+  "harness": {
+    "version": null,
+    "commit": "440475e919d4b91ddecd61109addcc830e84475a",
+    "dirty": false,
+    "source": "checkout"
+  },
+  "toolchain": {
+    "pytest": "8.4.2",
+    "ruff": "0.15.18",
+    "PyYAML": "6.0.2"
+  },
+  "passed": true,
+  "passed_modulo_baseline": false
+}

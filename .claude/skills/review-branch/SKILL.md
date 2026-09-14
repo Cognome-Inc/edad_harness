@@ -117,7 +117,7 @@ Read, and do not re-derive:
   no test covers it). Both matter to Drift; see the brief.
 - `.edad/hashes/T0NN.json` — the approval lock. Top-level keys are frozen paths →
   sha256; the `_edad` block holds `approved_at`, `ticket_sha256`, `decisions`,
-  `red_proof`, `mutation_proof`, `full_gate_baseline`.
+  `red_proof`, `mutation_proof`, `full_gate_baseline`, `harness`, `toolchain`.
 - The frozen test files named by the ticket, at `<commit>`. **These are the
   contract.** Not the spec, not the ticket prose — the assertions.
 

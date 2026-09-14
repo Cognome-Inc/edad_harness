@@ -1,0 +1,64 @@
+{
+  "tests/test_gate_refusal.py": "a69a2669d8376b9d9619af177401f1fe0c485047c84bea26452a5edb6d61c4b2",
+  "_edad": {
+    "approved_at": "2026-09-14T17:27:37.065243+00:00",
+    "ticket_sha256": "a7e2f4b21eb9228046b611f6c60ab7f0b331235ad50365eb0738973f814194bb",
+    "decisions": [
+      "D1",
+      "D2"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_gate_refusal.py::test_die_raises_a_refusal_that_is_still_an_exit_2 -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_refusal.py::test_die_raises_a_refusal_that_is_still_an_exit_2"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_refusal.py::test_a_refusal_at_the_acceptance_gate_is_logged_as_aborted_with_its_reason -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_refusal.py::test_a_refusal_at_the_acceptance_gate_is_logged_as_aborted_with_its_reason"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_refusal.py::test_a_refusal_at_the_full_gate_is_logged_the_same_way -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_refusal.py::test_a_refusal_at_the_full_gate_is_logged_the_same_way"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-09-14T17:27:33.898312+00:00",
+      "commit": "b29d320f3637f6fdc8f7b1ceaa2c017cc9c2076d",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_gate_refusal.py::test_die_raises_a_refusal_that_is_still_an_exit_2": 1,
+            "pytest:tests/test_gate_refusal.py::test_a_refusal_at_the_acceptance_gate_is_logged_as_aborted_with_its_reason": 1,
+            "pytest:tests/test_gate_refusal.py::test_a_refusal_at_the_full_gate_is_logged_the_same_way": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "b29d320f3637f6fdc8f7b1ceaa2c017cc9c2076d",
+      "dirty": false,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "8.4.2",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2"
+    }
+  }
+}

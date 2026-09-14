@@ -613,6 +613,11 @@ class RunState:
     here so `work_one` hands the same flags to every child, and written to the
     log at the top level so "did this night run sandboxed" is a lookup rather
     than a reconstruction from N session logs.
+
+    `harness` is the identity block `harness_identity()` gathers - version,
+    commit, dirtiness, install source - carried the same way and written at
+    the same top level, so the run log says which harness made the night as
+    plainly as it says how.
     """
 
     def __init__(  # noqa: PLR0913  # the night's own knobs, passed through; not five jobs
