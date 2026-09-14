@@ -98,6 +98,13 @@ class Night:
         monkeypatch.setattr(gate, "git", lambda root, *args: HEAD)
         monkeypatch.setattr(gate, "approval_meta", lambda root, ticket_id: {})
         monkeypatch.setattr(gate, "check_freeze", lambda root, ticket: (True, []))
+        # T022's base comparison. `run_session` passes a real `base_ref`, so
+        # without this the check runs for real against an empty `wt/`, reports
+        # the lock and ticket absent, and the freeze kill fires at iteration 1
+        # before the toolchain refusal these tests are about. `raising=False`
+        # keeps the suite green at the commit T022 is judged against.
+        monkeypatch.setattr(gate, "trusted_input_problems",
+                            lambda root, ticket_id, base_ref: [], raising=False)
         monkeypatch.setattr(gate, "changed_files", lambda root, base_ref: [])
         monkeypatch.setattr(gate, "run_commands", FakeRun())
         monkeypatch.setattr(gate, "measure_toolchain", measure)
