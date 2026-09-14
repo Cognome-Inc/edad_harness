@@ -1,0 +1,125 @@
+{
+  "tests/test_harness_identity.py": "3733da0f055758d7bd7cdae7960db8e5e03f0e25784222e349916951d9147307",
+  "_edad": {
+    "approved_at": "2026-09-14T16:42:54.859018+00:00",
+    "ticket_sha256": "a56ee5069916378a5b72df42976f8601ea4fca4e484d2e0c482606dffac96827",
+    "decisions": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_evaluate_measures_the_toolchain_once_and_records_it -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_evaluate_measures_the_toolchain_once_and_records_it"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_evaluate_refuses_a_toolchain_mismatch_before_running_anything -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_evaluate_refuses_a_toolchain_mismatch_before_running_anything"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_measure_toolchain_probes_each_pin_once_in_file_order -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_measure_toolchain_probes_each_pin_once_in_file_order"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_approve_measures_the_toolchain_once_for_check_and_lock -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_approve_measures_the_toolchain_once_for_check_and_lock"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_harness_of_reads_absent_empty_partial_and_full_blocks_as_one_shape -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_harness_of_reads_absent_empty_partial_and_full_blocks_as_one_shape"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_the_written_record_carries_harness_and_toolchain -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_the_written_record_carries_harness_and_toolchain"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_the_lock_records_harness_and_toolchain_at_approval -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_the_lock_records_harness_and_toolchain_at_approval"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_report_prints_the_harness_and_toolchain_lines -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_report_prints_the_harness_and_toolchain_lines"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_approve_prints_the_harness_line -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_approve_prints_the_harness_line"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_quickstart_evidence_section_names_harness_and_toolchain -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_quickstart_evidence_section_names_harness_and_toolchain"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-09-14T16:42:51.289823+00:00",
+      "commit": "4d2fe6e7c7c5a6e3268faafba20c6c9f4873496e",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_harness_identity.py::test_the_written_record_carries_harness_and_toolchain": 1,
+            "pytest:tests/test_harness_identity.py::test_the_lock_records_harness_and_toolchain_at_approval": 1,
+            "pytest:tests/test_harness_identity.py::test_evaluate_measures_the_toolchain_once_and_records_it": 1,
+            "pytest:tests/test_harness_identity.py::test_evaluate_refuses_a_toolchain_mismatch_before_running_anything": 1,
+            "pytest:tests/test_harness_identity.py::test_measure_toolchain_probes_each_pin_once_in_file_order": 1,
+            "pytest:tests/test_harness_identity.py::test_approve_measures_the_toolchain_once_for_check_and_lock": 1,
+            "pytest:tests/test_harness_identity.py::test_harness_of_reads_absent_empty_partial_and_full_blocks_as_one_shape": 1,
+            "pytest:tests/test_harness_identity.py::test_report_prints_the_harness_and_toolchain_lines": 1,
+            "pytest:tests/test_harness_identity.py::test_approve_prints_the_harness_line": 1,
+            "pytest:tests/test_harness_identity.py::test_quickstart_evidence_section_names_harness_and_toolchain": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "4d2fe6e7c7c5a6e3268faafba20c6c9f4873496e",
+      "dirty": false,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "8.4.2",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2"
+    }
+  }
+}
