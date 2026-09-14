@@ -71,8 +71,11 @@ boundary. On the host it is allowed exactly the ticket's own gate commands.
 
 Every run writes `.edad/records/<ticket>-<ts>-<sha>.json`: commit, per-check
 verdict, per-command exit code, duration, output tail. That file is the
-record. The agent's own summary of its work is not an input to it. When a
-ticket passes its full gate the controller promotes the record to
+record. The agent's own summary of its work is not an input to it. Two more
+blocks say who ran it: `harness` carries the running harness's version,
+commit, dirtiness and install source, and `toolchain` carries the pinned
+tools' versions as the gate measured them before running. When a ticket
+passes its full gate the controller promotes the record to
 `.edad/evidence/<ticket>.json`, committed beside the code it verifies.
 
 ## Releasing

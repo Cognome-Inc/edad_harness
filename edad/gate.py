@@ -634,23 +634,107 @@ class Measurement:
 
 
 def measure_toolchain(root: Path) -> list[Measurement]:
-    return []
+    """One `_pinned_versions` pass and one `_probe_versions` call per pinned
+    name, in file order - the single measurement the pin check and the record
+    it feeds both read, so they cannot silently diverge into two probes."""
+    return [
+        Measurement(name, pinned, *_probe_versions(root, name))
+        for name, pinned in _pinned_versions(root)
+    ]
 
 
 def toolchain_problems(measurements: list[Measurement]) -> list[str]:
-    return []
+    """Compare a measurement against its own pin.
+
+    Was `gate_toolchain_problems`'s body when it probed directly; now it reads
+    values `measure_toolchain` already gathered, so approve, evaluate and the
+    session controller share one probe per pinned name instead of one each.
+    """
+    problems = []
+    for m in measurements:
+        found = m.meta or m.on_path
+        if found is None:
+            where = "the gate's python3 or PATH" if m.name in VERSION_PROBES else "the gate's python3"
+            problems.append(f"{m.name}: not found on {where} (pinned {m.pinned})")
+        elif m.meta and m.on_path and m.meta != m.on_path:
+            # Neither is wrong; they disagree, and which one runs depends on how
+            # each command is spelled. That ambiguity is itself the defect: the
+            # verdict must be a property of the commit, not of argv.
+            problems.append(
+                f"{m.name}: {m.meta} importable but {m.on_path} first on PATH "
+                f"(pinned {m.pinned}); which one runs depends on how the command "
+                f"is written"
+            )
+        elif found != m.pinned:
+            problems.append(f"{m.name}: {found}, pinned {m.pinned}")
+    return problems
 
 
 def versions_of(measurements: list[Measurement]) -> dict:
-    return {}
+    """{name: measured version} in measurement order - `meta or on_path`, the
+    same reading `toolchain_problems` compares against the pin."""
+    return {m.name: m.meta or m.on_path for m in measurements}
 
 
 def harness_of(artifact: dict) -> dict:
-    return {}
+    """The `harness` block of a record or lock, normalised to one shape.
+
+    An artifact from before T019 has no key at all; `T019.json` itself has
+    `{}`; a lock may carry a partial block. All three, and the full block,
+    read as the same four keys here - `version`, `commit`, `dirty`, `source` -
+    so every future reader stops re-deriving this. Never raises, never writes.
+    """
+    block = artifact.get("harness")
+    if not isinstance(block, dict):
+        block = {}
+    return {
+        "version": block.get("version"),
+        "commit": block.get("commit"),
+        "dirty": block.get("dirty"),
+        "source": block.get("source") or "unknown",
+    }
 
 
 def toolchain_of(artifact: dict) -> dict:
-    return {}
+    """The `toolchain` block of a record or lock, normalised to one shape."""
+    block = artifact.get("toolchain")
+    return dict(block) if isinstance(block, dict) else {}
+
+
+def harness_line(harness: dict) -> str:
+    """The one line `report()` and `cmd_approve` both print for a harness
+    block already run through `harness_of`."""
+    if harness["source"] == "unknown":
+        return "harness   unknown"
+    parts = [harness["source"]]
+    if harness["commit"]:
+        parts.append(harness["commit"][:8])
+    if harness["dirty"]:
+        parts.append("dirty")
+    if harness["version"]:
+        parts.append(f"v{harness['version']}")
+    return "harness   " + " ".join(parts)
+
+
+def toolchain_line(toolchain: dict) -> str:
+    """The one line `report()` prints for a toolchain block already run
+    through `toolchain_of`."""
+    if not toolchain:
+        return "toolchain unknown"
+    parts = [f"{name} {ver if ver is not None else 'unknown'}" for name, ver in toolchain.items()]
+    return "toolchain " + ", ".join(parts)
+
+
+def die_on_toolchain_mismatch(problems: list[str]) -> None:
+    """Refuse with approve's own message - shared so evaluate and cmd_approve
+    cannot drift into two wordings of the same refusal."""
+    if problems:
+        die(
+            "the gate's toolchain does not match requirements-gate.txt: "
+            + "; ".join(problems) + ". A missing tool fails for the wrong reason "
+            "and would read as red. Install the pins: "
+            "pip install -r requirements-gate.txt"
+        )
 
 
 def gate_toolchain_problems(root: Path) -> list[str]:
@@ -663,39 +747,16 @@ def gate_toolchain_problems(root: Path) -> list[str]:
     acceptance commands "fail" for the wrong reason, which reads as red and
     would let a vacuous test through the check below.
     """
-    problems = []
-    for name, pinned in _pinned_versions(root):
-        meta, on_path = _probe_versions(root, name)
-        found = meta or on_path
-        if found is None:
-            where = "the gate's python3 or PATH" if name in VERSION_PROBES else "the gate's python3"
-            problems.append(f"{name}: not found on {where} (pinned {pinned})")
-        elif meta and on_path and meta != on_path:
-            # Neither is wrong; they disagree, and which one runs depends on how
-            # each command is spelled. That ambiguity is itself the defect: the
-            # verdict must be a property of the commit, not of argv.
-            problems.append(
-                f"{name}: {meta} importable but {on_path} first on PATH "
-                f"(pinned {pinned}); which one runs depends on how the command "
-                f"is written"
-            )
-        elif found != pinned:
-            problems.append(f"{name}: {found}, pinned {pinned}")
-    return problems
+    return toolchain_problems(measure_toolchain(root))
 
 
 def toolchain_versions(root: Path) -> dict:
     """{name: measured version} for every pin in requirements-gate.txt.
 
-    `measured` is exactly what the pin check compares against the pin - `meta
-    or on_path` from the same `_probe_versions` call - so a record can never
-    claim a measurement the check itself did not make.
+    Takes its own measurement - `measure_toolchain(root)` - so callers that
+    only want the versions still get them without touching the pin check.
     """
-    versions: dict[str, str | None] = {}
-    for name, _ in _pinned_versions(root):
-        meta, on_path = _probe_versions(root, name)
-        versions[name] = meta or on_path
-    return versions
+    return versions_of(measure_toolchain(root))
 
 
 def identify_harness(version, direct_url, head, dirty) -> dict:
@@ -759,6 +820,9 @@ def harness_head(checkout: Path) -> str | None:
 
 
 def harness_dirty(checkout: Path) -> bool | None:
+    # --untracked-files=no: an untracked file only changes behaviour if
+    # something imports it, and deciding which untracked files would is a
+    # deferred question, not one this probe answers today.
     return bool(git_raw(checkout, "status", "--porcelain", "--untracked-files=no"))
 
 
@@ -1559,15 +1623,9 @@ def cmd_approve(args) -> int:
     # Both checks below execute commands, and both misread a broken toolchain:
     # a missing pytest fails for the wrong reason, which reads as red proof the
     # ticket has not earned and as a full_gate failure nobody can fix.
+    measurements = measure_toolchain(root)
     if prove_red or mutations or ticket.get("full_gate"):
-        problems = gate_toolchain_problems(root)
-        if problems:
-            die(
-                "the gate's toolchain does not match requirements-gate.txt: "
-                + "; ".join(problems) + ". A missing tool fails for the wrong reason "
-                "and would read as red. Install the pins: "
-                "pip install -r requirements-gate.txt"
-            )
+        die_on_toolchain_mismatch(toolchain_problems(measurements))
 
     probe = run_full_gate_probe(root, ticket)
     baseline = build_baseline(root, probe) if probe else None
@@ -1622,7 +1680,7 @@ def cmd_approve(args) -> int:
         # toolchain - a lock records a measurement, and a measurement was
         # always made by some harness under some toolchain.
         "harness": harness_identity(),
-        "toolchain": toolchain_versions(root),
+        "toolchain": versions_of(measurements),
     }
     out = root / ".edad" / "hashes" / f"{ticket['id']}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -1630,6 +1688,7 @@ def cmd_approve(args) -> int:
     print(f"approved {ticket['id']}: {len(hashes)} frozen file(s)")
     for rel, h in hashes.items():
         print(f"  {h[:12]}  {rel}")
+    print("  " + harness_line(harness_of(lock[LOCK_META_KEY])))
     print_approval_proof(red, mutation_proof)
     if baseline:
         print_baseline(baseline)
@@ -1647,6 +1706,9 @@ def evaluate(
     if not commands:
         die(f"ticket declares no '{gate_name}' commands")
 
+    measurements = measure_toolchain(root)
+    die_on_toolchain_mismatch(toolchain_problems(measurements))
+
     rec = Record(
         ticket=ticket["id"],
         started_at=datetime.now(UTC).isoformat(),
@@ -1657,7 +1719,7 @@ def evaluate(
         commands_ok=False,
         scope_enforced=bool(kills.get("diff_touches_outside_scope", True)),
         harness=harness_identity(),
-        toolchain=toolchain_versions(root),
+        toolchain=versions_of(measurements),
     )
 
     meta = approval_meta(root, ticket["id"])
@@ -1812,6 +1874,8 @@ def report(rec: Record) -> None:
             print(f"    ! not comparable against the baseline: {c}")
     if rec.decisions:
         print(f"  decisions {', '.join(rec.decisions)}")
+    print("  " + harness_line(harness_of({"harness": rec.harness})))
+    print("  " + toolchain_line(toolchain_of({"toolchain": rec.toolchain})))
     if rec.approved and not rec.ticket_verified:
         print("  ! approval lock predates ticket hashing: the frozen tests were "
               "verified, the ticket's own fields were not")
