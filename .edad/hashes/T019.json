@@ -1,0 +1,123 @@
+{
+  "tests/test_harness_identity.py": "784fd1214ed83d13b23654fc093d38970b373ed39d91261e5def68d43c2b3fdb",
+  "tests/test_session_queue.py": "e8f90a457a2d28a110683f039e7b80615e0aa0eae3d4581a175afe499e3c57dd",
+  "_edad": {
+    "approved_at": "2026-09-12T19:32:52.391894+00:00",
+    "ticket_sha256": "1843b7a91045d15c6831ab64fd586cbf1bd401e5b9d9b3acfa257d0b9aaa5ada",
+    "decisions": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D5",
+      "D6"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_a_vcs_install_is_identified_by_its_recorded_commit -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_a_vcs_install_is_identified_by_its_recorded_commit"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_an_editable_install_is_identified_by_the_checkout_head_and_dirtiness -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_an_editable_install_is_identified_by_the_checkout_head_and_dirtiness"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_a_bare_checkout_is_identified_by_head_with_no_version -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_a_bare_checkout_is_identified_by_head_with_no_version"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_nothing_known_is_unknown_with_nulls_not_an_error -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_nothing_known_is_unknown_with_nulls_not_an_error"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_the_gatherer_never_raises_and_degrades_to_unknown -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_the_gatherer_never_raises_and_degrades_to_unknown"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_toolchain_versions_stores_what_the_pin_check_measures -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_toolchain_versions_stores_what_the_pin_check_measures"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_the_written_record_carries_harness_and_toolchain -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_the_written_record_carries_harness_and_toolchain"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_the_lock_records_harness_and_toolchain_at_approval -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_the_lock_records_harness_and_toolchain_at_approval"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_the_session_log_records_the_harness_beside_permissions -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_the_session_log_records_the_harness_beside_permissions"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_the_run_log_records_the_harness_beside_network -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_the_run_log_records_the_harness_beside_network"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_harness_identity.py::test_quickstart_has_a_releasing_section_naming_the_tag_step -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_harness_identity.py::test_quickstart_has_a_releasing_section_naming_the_tag_step"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-09-12T19:32:50.157853+00:00",
+      "commit": "2a3ef6d0dbaa92970c4d9edfe9bd8aad83448aa7",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_harness_identity.py::test_a_vcs_install_is_identified_by_its_recorded_commit": 1,
+            "pytest:tests/test_harness_identity.py::test_an_editable_install_is_identified_by_the_checkout_head_and_dirtiness": 1,
+            "pytest:tests/test_harness_identity.py::test_a_bare_checkout_is_identified_by_head_with_no_version": 1,
+            "pytest:tests/test_harness_identity.py::test_nothing_known_is_unknown_with_nulls_not_an_error": 1,
+            "pytest:tests/test_harness_identity.py::test_the_gatherer_never_raises_and_degrades_to_unknown": 1,
+            "pytest:tests/test_harness_identity.py::test_toolchain_versions_stores_what_the_pin_check_measures": 1,
+            "pytest:tests/test_harness_identity.py::test_the_written_record_carries_harness_and_toolchain": 1,
+            "pytest:tests/test_harness_identity.py::test_the_lock_records_harness_and_toolchain_at_approval": 1,
+            "pytest:tests/test_harness_identity.py::test_the_session_log_records_the_harness_beside_permissions": 1,
+            "pytest:tests/test_harness_identity.py::test_the_run_log_records_the_harness_beside_network": 1,
+            "pytest:tests/test_harness_identity.py::test_quickstart_has_a_releasing_section_naming_the_tag_step": 1,
+            "pytest:tests/test_session_queue.py::test_the_logless_breaker_is_recorded_as_a_breaker_not_a_failure": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    }
+  }
+}

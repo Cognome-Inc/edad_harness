@@ -75,6 +75,27 @@ record. The agent's own summary of its work is not an input to it. When a
 ticket passes its full gate the controller promotes the record to
 `.edad/evidence/<ticket>.json`, committed beside the code it verifies.
 
+## Releasing
+
+A release is one commit, merged by pull request, followed by a tag on the
+merge commit. Nothing is bumped per ticket: the commits between releases are
+identified in evidence records and locks by `harness.commit`, not by a
+version number.
+
+To cut one:
+
+1. In a single commit, bump `version` in `pyproject.toml` and the pinned
+   `pip install git+...@vX.Y.Z` line in this file's Install section to match.
+   The two must agree — a mismatch here is what the packaging tests catch.
+2. Open a pull request with that commit and merge it.
+3. On the merge commit, `git tag vX.Y.Z` and `git push origin vX.Y.Z`. Placing
+   and pushing the tag is an operator act; nothing in the gate does it for you.
+
+A teammate who installs `git+...@vX.Y.Z` afterwards gets a harness whose
+identity block names that tag's commit. Nobody needs to run a release for a
+harness change to be identifiable — an editable install or an uninstalled
+checkout reports its own commit regardless.
+
 ## Where to read next
 
 - `edad/gate.py` — approve, freeze, scope, red and mutation proofs, the

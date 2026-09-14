@@ -1,6 +1,9 @@
 # Toolchain for the gate itself. Pinned exactly: the gate's verdict must be a
 # property of the commit, not of whatever versions were installed that day.
-# Bumping any pin invalidates prior evidence and needs a re-run to restore it.
+# A prior record stays valid for its commit — the check guaranteed these pins
+# at that commit, and the record's `toolchain` block says which they were.
+# Bumping a pin does not invalidate it; new records made after the bump are
+# simply made under different pins.
 pytest==8.4.2
 ruff==0.15.18
 PyYAML==6.0.2
