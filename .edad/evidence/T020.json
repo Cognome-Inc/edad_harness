@@ -1,0 +1,135 @@
+{
+  "ticket": "T020",
+  "started_at": "2026-09-14T16:52:34.073064+00:00",
+  "commit": "41f234d04b3217cfd1137fb0fdba8dee31abde2a",
+  "base_ref": "74c727b695e07715cd5df01b687586604b6fec31",
+  "gate": "full_gate",
+  "freeze_ok": true,
+  "commands_ok": true,
+  "scope_violations": [],
+  "scope_enforced": true,
+  "violations": [],
+  "changed_files": [
+    "edad/gate.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest -q",
+      "exit_code": 0,
+      "duration_s": 23.84,
+      "output_tail": "........................................................................ [ 30%]\n........................................................................ [ 60%]\n........................................................................ [ 90%]\n........................                                                 [100%]\n240 passed in 23.59s\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "duration_s": 0.05,
+      "output_tail": "All checks passed!\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    }
+  ],
+  "decisions": [
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "D7"
+  ],
+  "red_proof": [
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_evaluate_measures_the_toolchain_once_and_records_it -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_evaluate_measures_the_toolchain_once_and_records_it"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_evaluate_refuses_a_toolchain_mismatch_before_running_anything -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_evaluate_refuses_a_toolchain_mismatch_before_running_anything"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_measure_toolchain_probes_each_pin_once_in_file_order -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_measure_toolchain_probes_each_pin_once_in_file_order"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_approve_measures_the_toolchain_once_for_check_and_lock -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_approve_measures_the_toolchain_once_for_check_and_lock"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_harness_of_reads_absent_empty_partial_and_full_blocks_as_one_shape -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_harness_of_reads_absent_empty_partial_and_full_blocks_as_one_shape"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_the_written_record_carries_harness_and_toolchain -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_the_written_record_carries_harness_and_toolchain"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_the_lock_records_harness_and_toolchain_at_approval -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_the_lock_records_harness_and_toolchain_at_approval"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_report_prints_the_harness_and_toolchain_lines -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_report_prints_the_harness_and_toolchain_lines"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_approve_prints_the_harness_line -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_approve_prints_the_harness_line"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_harness_identity.py::test_quickstart_evidence_section_names_harness_and_toolchain -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_harness_identity.py::test_quickstart_evidence_section_names_harness_and_toolchain"
+      ]
+    }
+  ],
+  "mutation_proof": null,
+  "approved": true,
+  "ticket_verified": true,
+  "baseline_commit": null,
+  "new_failures": {},
+  "uncomparable_failures": [],
+  "harness": {
+    "version": null,
+    "commit": "74c727b695e07715cd5df01b687586604b6fec31",
+    "dirty": false,
+    "source": "checkout"
+  },
+  "toolchain": {
+    "pytest": "8.4.2",
+    "ruff": "0.15.18",
+    "PyYAML": "6.0.2"
+  },
+  "passed": true,
+  "passed_modulo_baseline": false
+}
