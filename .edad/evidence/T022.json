@@ -1,0 +1,125 @@
+{
+  "ticket": "T022",
+  "started_at": "2026-09-14T18:51:32.526235+00:00",
+  "commit": "43c2ef91a99a6b1dcd64a1eecc48e748a00ab5ce",
+  "base_ref": "9dae8db427c6ea327a3c0e302e5b7389cba2e663",
+  "gate": "full_gate",
+  "freeze_ok": true,
+  "commands_ok": true,
+  "scope_violations": [],
+  "scope_enforced": true,
+  "violations": [],
+  "changed_files": [
+    "QUICKSTART.md",
+    "edad/gate.py",
+    "edad/session.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest -q",
+      "exit_code": 0,
+      "duration_s": 17.04,
+      "output_tail": "........................................................................ [ 28%]\n........................................................................ [ 56%]\n........................................................................ [ 85%]\n.....................................                                    [100%]\n253 passed in 16.88s\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "duration_s": 0.04,
+      "output_tail": "All checks passed!\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    }
+  ],
+  "decisions": [
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "D7",
+    "D8",
+    "D9"
+  ],
+  "red_proof": [
+    {
+      "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_lock_rewritten_to_match_an_edited_frozen_test_is_refused -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_trusted_inputs.py::test_lock_rewritten_to_match_an_edited_frozen_test_is_refused"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_ticket_rewritten_in_the_worktree_is_refused -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_trusted_inputs.py::test_ticket_rewritten_in_the_worktree_is_refused"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_pinned_name_dropped_since_approval_is_refused -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_trusted_inputs.py::test_pinned_name_dropped_since_approval_is_refused"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_divergence_is_a_freeze_failure_in_the_record_not_a_die -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_trusted_inputs.py::test_divergence_is_a_freeze_failure_in_the_record_not_a_die"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_preflight_refuses_an_uncommitted_or_drifted_contract -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_trusted_inputs.py::test_preflight_refuses_an_uncommitted_or_drifted_contract"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_quickstart_evidence_section_explains_null_base_ref -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_trusted_inputs.py::test_quickstart_evidence_section_explains_null_base_ref"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_refusal_wording_names_the_file_and_who_may_change_it -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_trusted_inputs.py::test_refusal_wording_names_the_file_and_who_may_change_it"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_harness_line_keeps_a_partial_blocks_commit -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_trusted_inputs.py::test_harness_line_keeps_a_partial_blocks_commit"
+      ]
+    }
+  ],
+  "mutation_proof": null,
+  "approved": true,
+  "ticket_verified": true,
+  "baseline_commit": null,
+  "new_failures": {},
+  "uncomparable_failures": [],
+  "harness": {
+    "version": null,
+    "commit": "9dae8db427c6ea327a3c0e302e5b7389cba2e663",
+    "dirty": false,
+    "source": "checkout"
+  },
+  "toolchain": {
+    "pytest": "8.4.2",
+    "ruff": "0.15.18",
+    "PyYAML": "6.0.2"
+  },
+  "passed": true,
+  "passed_modulo_baseline": false
+}
