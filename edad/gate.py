@@ -340,6 +340,67 @@ def check_freeze(root: Path, ticket: dict) -> tuple[bool, list[str]]:
     return not problems, problems
 
 
+def trusted_input_problems(root: Path, ticket_id: str, base_ref: str | None) -> list[str]:
+    """Every input the gate trusts, compared to base - not to the worktree's
+    own copy of itself.
+
+    `check_freeze` and `approval_meta` read the approval lock and the ticket
+    from the tree they are verifying. `.edad/` is in INFRA_PREFIXES, so
+    `changed_files` never reports it and `check_scope` never looks there
+    either - an agent can edit a frozen test, rewrite its hash in the lock to
+    match, and both checks stay satisfied. The ticket's hash and the red proof
+    live in the same lock and are forgeable in the same edit.
+    `requirements-gate.txt` is read from the same tree too: strip a pin the
+    lock recorded and T020's mismatch refusal has nothing left to measure.
+
+    Enumerated here, explicitly, rather than folded into `check_freeze`, so a
+    future trusted input is added to this list on purpose instead of being
+    discovered missing. Today: the lock, the ticket, and the pin floor.
+
+    [] immediately when there is no base to compare against - no git command
+    is run in that case, not even to check a file exists.
+    """
+    if base_ref is None:
+        return []
+    problems: list[str] = []
+
+    lock_rel = f".edad/hashes/{ticket_id}.json"
+    lock_path = root / lock_rel
+    worktree_lock = lock_path.read_text().strip() if lock_path.exists() else None
+    try:
+        base_lock = git(root, "show", f"{base_ref}:{lock_rel}").strip()
+    except subprocess.CalledProcessError:
+        base_lock = None
+    if worktree_lock != base_lock:
+        problems.append(
+            f"approval lock modified since {base_ref}: {lock_rel} "
+            f"(the harness's record of what was approved is not the agent's to edit)"
+        )
+
+    ticket_rel = f".edad/tickets/{ticket_id}.md"
+    ticket_path_ = root / ticket_rel
+    worktree_ticket = ticket_path_.read_text().strip() if ticket_path_.exists() else None
+    try:
+        base_ticket = git(root, "show", f"{base_ref}:{ticket_rel}").strip()
+    except subprocess.CalledProcessError:
+        base_ticket = None
+    if worktree_ticket != base_ticket:
+        problems.append(
+            f"ticket modified since {base_ref}: {ticket_rel} (re-approve to adopt the change)"
+        )
+
+    pinned_names = {name for name, _ in _pinned_versions(root)}
+    for name in toolchain_of(approval_meta(root, ticket_id)):
+        if name not in pinned_names:
+            problems.append(
+                f"pinned name dropped since approval: {name} (requirements-gate.txt "
+                f"at approval pinned it; removing a pin is a human commit before "
+                f"re-approval)"
+            )
+
+    return problems
+
+
 LOCK_META_KEY = "_edad"
 
 
@@ -722,7 +783,15 @@ def harness_line(harness: dict) -> str:
     """The one line `report()` and `cmd_approve` both print for a harness
     block already run through `harness_of`."""
     if harness["source"] == "unknown":
-        return "harness   unknown"
+        # No source says how to read the commit, not that there was none - a
+        # partial block (harness_of keeps whatever it was given) still names
+        # what it has, same pieces and order as the known-source branch below.
+        parts = ["unknown"]
+        if harness["commit"]:
+            parts.append(harness["commit"][:8])
+        if harness["dirty"]:
+            parts.append("dirty")
+        return "harness   " + " ".join(parts)
     parts = [harness["source"]]
     if harness["commit"]:
         parts.append(harness["commit"][:8])
@@ -1761,6 +1830,10 @@ def evaluate(
     rec.mutation_proof = meta.get("mutation_proof")
 
     rec.freeze_ok, freeze_problems = check_freeze(root, ticket)
+    drift_problems = trusted_input_problems(root, ticket["id"], base_ref)
+    freeze_problems = freeze_problems + drift_problems
+    if drift_problems:
+        rec.freeze_ok = False
     rec.violations += freeze_problems
 
     rec.changed_files = changed_files(root, base_ref)

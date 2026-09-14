@@ -77,6 +77,9 @@ commit, dirtiness and install source, and `toolchain` carries the pinned
 tools' versions as the gate measured them before running. When a ticket
 passes its full gate the controller promotes the record to
 `.edad/evidence/<ticket>.json`, committed beside the code it verifies.
+`base_ref` names the commit the gate compared the worktree's approval lock,
+ticket and pin floor against; `null` means the gate was run by hand with no
+base, so nothing was compared.
 
 ## Releasing
 

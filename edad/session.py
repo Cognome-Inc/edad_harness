@@ -56,6 +56,7 @@ from edad.gate import (
     harness_identity,
     load_ticket,
     repo_root,
+    trusted_input_problems,
     write_record,
 )
 
@@ -130,6 +131,16 @@ def preflight(  # noqa: PLR0913  # the run's five knobs, passed through; not fiv
     ok, problems = check_freeze(root, ticket)
     if not ok:
         raise Abort("frozen files already differ from the approval lock: " + "; ".join(problems))
+
+    # check_freeze above proves the lock's hashes still match this tree; it
+    # cannot see a re-approval that rewrote both consistently but was never
+    # committed, or a pin a human dropped on main after approval. Comparing to
+    # HEAD catches what an in-tree comparison structurally cannot, and does it
+    # before a worktree exists rather than mid-session, where it would read as
+    # the agent's doing.
+    drift = trusted_input_problems(root, ticket["id"], "HEAD")
+    if drift:
+        raise Abort("contract drifted since HEAD; re-approve:\n  " + "\n  ".join(drift))
 
     blocked = ticket.get("blocked_by") or []
     unmet = [b for b in blocked if not (root / ".edad" / "evidence" / f"{b}.json").exists()]
