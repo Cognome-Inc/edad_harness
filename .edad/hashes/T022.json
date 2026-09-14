@@ -1,0 +1,111 @@
+{
+  "tests/test_gate_trusted_inputs.py": "718c5a948ae4d83cc7e1b8eb9ca126e8ad454d7fc26eab55ebd517bfa37c6192",
+  "_edad": {
+    "approved_at": "2026-09-14T18:27:21.369816+00:00",
+    "ticket_sha256": "eca8d361477b63cb78b1f9e70cb0c1b4a591503c8d9c9e4ec03a8774dc01a3c7",
+    "decisions": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_lock_rewritten_to_match_an_edited_frozen_test_is_refused -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_trusted_inputs.py::test_lock_rewritten_to_match_an_edited_frozen_test_is_refused"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_ticket_rewritten_in_the_worktree_is_refused -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_trusted_inputs.py::test_ticket_rewritten_in_the_worktree_is_refused"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_pinned_name_dropped_since_approval_is_refused -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_trusted_inputs.py::test_pinned_name_dropped_since_approval_is_refused"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_divergence_is_a_freeze_failure_in_the_record_not_a_die -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_trusted_inputs.py::test_divergence_is_a_freeze_failure_in_the_record_not_a_die"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_preflight_refuses_an_uncommitted_or_drifted_contract -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_trusted_inputs.py::test_preflight_refuses_an_uncommitted_or_drifted_contract"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_quickstart_evidence_section_explains_null_base_ref -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_trusted_inputs.py::test_quickstart_evidence_section_explains_null_base_ref"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_refusal_wording_names_the_file_and_who_may_change_it -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_trusted_inputs.py::test_refusal_wording_names_the_file_and_who_may_change_it"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_trusted_inputs.py::test_harness_line_keeps_a_partial_blocks_commit -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_trusted_inputs.py::test_harness_line_keeps_a_partial_blocks_commit"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-09-14T18:27:18.312716+00:00",
+      "commit": "cecae667b517a03472e54cfbb1175c3cae5b9f77",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_gate_trusted_inputs.py::test_lock_rewritten_to_match_an_edited_frozen_test_is_refused": 1,
+            "pytest:tests/test_gate_trusted_inputs.py::test_ticket_rewritten_in_the_worktree_is_refused": 1,
+            "pytest:tests/test_gate_trusted_inputs.py::test_pinned_name_dropped_since_approval_is_refused": 1,
+            "pytest:tests/test_gate_trusted_inputs.py::test_divergence_is_a_freeze_failure_in_the_record_not_a_die": 1,
+            "pytest:tests/test_gate_trusted_inputs.py::test_refusal_wording_names_the_file_and_who_may_change_it": 1,
+            "pytest:tests/test_gate_trusted_inputs.py::test_preflight_refuses_an_uncommitted_or_drifted_contract": 1,
+            "pytest:tests/test_gate_trusted_inputs.py::test_quickstart_evidence_section_explains_null_base_ref": 1,
+            "pytest:tests/test_gate_trusted_inputs.py::test_harness_line_keeps_a_partial_blocks_commit": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "cecae667b517a03472e54cfbb1175c3cae5b9f77",
+      "dirty": false,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "8.4.2",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2"
+    }
+  }
+}
