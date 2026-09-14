@@ -46,6 +46,7 @@ from edad.egress import (
 )
 from edad.gate import (
     Record,
+    Refusal,
     changed_files,
     check_freeze,
     evaluate,
@@ -1060,7 +1061,7 @@ def run_session(root: Path, ticket: dict, args) -> int:  # noqa: PLR0915  # line
         )
         print(f"\n{how}. branch {branch}, evidence committed. Not merged — review and merge.")
 
-    except Abort as e:
+    except (Abort, Refusal) as e:
         log.outcome = "unwinnable" if isinstance(e, Unwinnable) else "aborted"
         log.abort_reason = str(e)
         print(f"\nABORTED: {e}\nBranch {branch} left at {wt} for inspection.", file=sys.stderr)

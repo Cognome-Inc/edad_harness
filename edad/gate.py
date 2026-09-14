@@ -110,13 +110,21 @@ def sha256(path: Path) -> str:
 
 
 class Refusal(SystemExit):
-    """Stub for T021: the type exists so the frozen test's isinstance assertion
-    is the red, not an AttributeError; `die` does not raise it yet."""
+    """A gate refusal. Still a SystemExit(2), so the CLI is unaffected; a
+    distinct type so `run_session` can catch it beside `Abort` and log the
+    reason rather than let it escape as an untyped exit."""
+
+    def __init__(self, reason: str) -> None:
+        SystemExit.__init__(self, 2)
+        self.reason = reason
+
+    def __str__(self) -> str:
+        return self.reason
 
 
 def die(msg: str) -> None:
     print(f"edad: {msg}", file=sys.stderr)
-    raise SystemExit(2)
+    raise Refusal(msg)
 
 
 def warn(msg: str) -> None:
