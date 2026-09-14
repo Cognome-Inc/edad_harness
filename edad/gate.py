@@ -109,6 +109,11 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+class Refusal(SystemExit):
+    """Stub for T021: the type exists so the frozen test's isinstance assertion
+    is the red, not an AttributeError; `die` does not raise it yet."""
+
+
 def die(msg: str) -> None:
     print(f"edad: {msg}", file=sys.stderr)
     raise SystemExit(2)
