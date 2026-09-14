@@ -1,8 +1,8 @@
 {
   "tests/test_gate_trusted_inputs.py": "718c5a948ae4d83cc7e1b8eb9ca126e8ad454d7fc26eab55ebd517bfa37c6192",
   "_edad": {
-    "approved_at": "2026-09-14T18:27:21.369816+00:00",
-    "ticket_sha256": "eca8d361477b63cb78b1f9e70cb0c1b4a591503c8d9c9e4ec03a8774dc01a3c7",
+    "approved_at": "2026-09-14T18:47:03.574884+00:00",
+    "ticket_sha256": "d093c87702925fb3b1d3190eca9b2594dc1376b53cf1e031a139491d0168bfd3",
     "decisions": [
       "D1",
       "D2",
@@ -74,8 +74,8 @@
     ],
     "mutation_proof": null,
     "full_gate_baseline": {
-      "taken_at": "2026-09-14T18:27:18.312716+00:00",
-      "commit": "cecae667b517a03472e54cfbb1175c3cae5b9f77",
+      "taken_at": "2026-09-14T18:47:00.528703+00:00",
+      "commit": "1f8ee1bba0cb5b989ab962eaa12373c6236afc69",
       "commands": {
         "python3 -m pytest -q": {
           "exit_code": 1,
@@ -98,7 +98,7 @@
     },
     "harness": {
       "version": null,
-      "commit": "cecae667b517a03472e54cfbb1175c3cae5b9f77",
+      "commit": "1f8ee1bba0cb5b989ab962eaa12373c6236afc69",
       "dirty": false,
       "source": "checkout"
     },
