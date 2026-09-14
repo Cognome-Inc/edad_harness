@@ -625,6 +625,34 @@ def _pinned_versions(root: Path) -> list[tuple[str, str]]:
     return pins
 
 
+@dataclass
+class Measurement:
+    name: str
+    pinned: str
+    meta: str | None
+    on_path: str | None
+
+
+def measure_toolchain(root: Path) -> list[Measurement]:
+    return []
+
+
+def toolchain_problems(measurements: list[Measurement]) -> list[str]:
+    return []
+
+
+def versions_of(measurements: list[Measurement]) -> dict:
+    return {}
+
+
+def harness_of(artifact: dict) -> dict:
+    return {}
+
+
+def toolchain_of(artifact: dict) -> dict:
+    return {}
+
+
 def gate_toolchain_problems(root: Path) -> list[str]:
     """Compare the versions the GATE will resolve against requirements-gate.txt.
 
