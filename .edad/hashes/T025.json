@@ -1,0 +1,167 @@
+{
+  "tests/test_full_gate_retry.py": "e8e46f2ae347bfb6a57889cad0f50352c293d054c6a1ca381bee0d0b10e776df",
+  "_edad": {
+    "approved_at": "2026-09-15T19:52:39.084367+00:00",
+    "ticket_sha256": "e524704fdee4d9b224fda6feffa3e34d7a4800fe01748ae27469a8b450acb759",
+    "decisions": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_the_opening_prompt_names_every_full_gate_command_and_the_baseline_rule -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_the_opening_prompt_names_every_full_gate_command_and_the_baseline_rule"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_the_full_gate_does_not_run_when_acceptance_fails -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_the_full_gate_does_not_run_when_acceptance_fails"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_an_introduced_full_gate_failure_is_retried_and_the_next_iteration_promotes -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_an_introduced_full_gate_failure_is_retried_and_the_next_iteration_promotes"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_an_unwinnable_full_gate_still_ends_the_night -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_an_unwinnable_full_gate_still_ends_the_night"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_an_uncomparable_full_gate_still_ends_the_night -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_an_uncomparable_full_gate_still_ends_the_night"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_an_introduced_failure_outside_scope_is_retried_not_aborted -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_an_introduced_failure_outside_scope_is_retried_not_aborted"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_the_same_introduced_keys_three_iterations_running_end_the_night -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_the_same_introduced_keys_three_iterations_running_end_the_night"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_two_retries_with_different_keys_then_a_pass_promote -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_two_retries_with_different_keys_then_a_pass_promote"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_a_full_gate_retry_spends_an_iteration_of_the_ticket_budget -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_a_full_gate_retry_spends_an_iteration_of_the_ticket_budget"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_the_iteration_log_says_acceptance_passed_and_what_the_full_gate_found -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_the_iteration_log_says_acceptance_passed_and_what_the_full_gate_found"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_the_queue_reads_a_retried_night_the_same_way -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_the_queue_reads_a_retried_night_the_same_way"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_the_full_gate_retry_prompt_says_acceptance_passed_and_quotes_each_failure -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_the_full_gate_retry_prompt_says_acceptance_passed_and_quotes_each_failure"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_running_out_of_iterations_with_acceptance_green_names_the_full_gate_failures -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_running_out_of_iterations_with_acceptance_green_names_the_full_gate_failures"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_a_refused_full_gate_leaves_the_field_unset -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_a_refused_full_gate_leaves_the_field_unset"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_full_gate_retry.py::test_the_module_docstring_no_longer_puts_the_full_gate_after_the_loop -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_full_gate_retry.py::test_the_module_docstring_no_longer_puts_the_full_gate_after_the_loop"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-09-15T19:52:36.024455+00:00",
+      "commit": "93f65f9c9dc9d13f23feb6419198a7ed58d739ab",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_full_gate_retry.py::test_the_opening_prompt_names_every_full_gate_command_and_the_baseline_rule": 1,
+            "pytest:tests/test_full_gate_retry.py::test_the_full_gate_does_not_run_when_acceptance_fails": 1,
+            "pytest:tests/test_full_gate_retry.py::test_an_introduced_full_gate_failure_is_retried_and_the_next_iteration_promotes": 1,
+            "pytest:tests/test_full_gate_retry.py::test_an_unwinnable_full_gate_still_ends_the_night": 1,
+            "pytest:tests/test_full_gate_retry.py::test_an_uncomparable_full_gate_still_ends_the_night": 1,
+            "pytest:tests/test_full_gate_retry.py::test_an_introduced_failure_outside_scope_is_retried_not_aborted": 1,
+            "pytest:tests/test_full_gate_retry.py::test_the_same_introduced_keys_three_iterations_running_end_the_night": 1,
+            "pytest:tests/test_full_gate_retry.py::test_two_retries_with_different_keys_then_a_pass_promote": 1,
+            "pytest:tests/test_full_gate_retry.py::test_a_full_gate_retry_spends_an_iteration_of_the_ticket_budget": 1,
+            "pytest:tests/test_full_gate_retry.py::test_the_iteration_log_says_acceptance_passed_and_what_the_full_gate_found": 1,
+            "pytest:tests/test_full_gate_retry.py::test_the_queue_reads_a_retried_night_the_same_way": 1,
+            "pytest:tests/test_full_gate_retry.py::test_the_full_gate_retry_prompt_says_acceptance_passed_and_quotes_each_failure": 1,
+            "pytest:tests/test_full_gate_retry.py::test_running_out_of_iterations_with_acceptance_green_names_the_full_gate_failures": 1,
+            "pytest:tests/test_full_gate_retry.py::test_a_refused_full_gate_leaves_the_field_unset": 1,
+            "pytest:tests/test_full_gate_retry.py::test_the_module_docstring_no_longer_puts_the_full_gate_after_the_loop": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "93f65f9c9dc9d13f23feb6419198a7ed58d739ab",
+      "dirty": true,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "8.4.2",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2"
+    }
+  }
+}
