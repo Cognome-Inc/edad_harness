@@ -1,0 +1,107 @@
+{
+  "ticket": "T023",
+  "started_at": "2026-09-15T14:33:08.059455+00:00",
+  "commit": "939595b7b1833ffc709266e408ee35afcf86b200",
+  "base_ref": "423de045c0081e286e7b58e5ff0959b2466a890b",
+  "gate": "full_gate",
+  "freeze_ok": true,
+  "commands_ok": true,
+  "scope_violations": [],
+  "scope_enforced": true,
+  "violations": [],
+  "changed_files": [
+    "edad/gate.py",
+    "edad/session.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest -q",
+      "exit_code": 0,
+      "duration_s": 17.39,
+      "output_tail": "........................................................................ [ 27%]\n........................................................................ [ 55%]\n........................................................................ [ 83%]\n............................................                             [100%]\n260 passed in 17.22s\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "duration_s": 0.06,
+      "output_tail": "All checks passed!\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    }
+  ],
+  "decisions": [
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D5",
+    "D7"
+  ],
+  "red_proof": [
+    {
+      "command": "python3 -m pytest tests/test_refused_iteration.py::test_a_refused_iteration_is_logged_then_the_session_aborts -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_refused_iteration.py::test_a_refused_iteration_is_logged_then_the_session_aborts"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_refused_iteration.py::test_the_refused_iteration_carries_the_verdict_the_commit_and_the_agent_tail -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_refused_iteration.py::test_the_refused_iteration_carries_the_verdict_the_commit_and_the_agent_tail"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_refused_iteration.py::test_a_refused_night_that_committed_is_not_a_no_commit_abort -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_refused_iteration.py::test_a_refused_night_that_committed_is_not_a_no_commit_abort"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_refused_iteration.py::test_a_refusal_after_the_worktree_changed_the_pins_does_not_advise_installing_them -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_refused_iteration.py::test_a_refusal_after_the_worktree_changed_the_pins_does_not_advise_installing_them"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_refused_iteration.py::test_a_refusal_after_an_out_of_scope_pin_change_names_the_stray_in_the_log -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_refused_iteration.py::test_a_refusal_after_an_out_of_scope_pin_change_names_the_stray_in_the_log"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_refused_iteration.py::test_a_refusal_after_a_frozen_pin_change_names_the_frozen_file_not_the_scope -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_refused_iteration.py::test_a_refusal_after_a_frozen_pin_change_names_the_frozen_file_not_the_scope"
+      ]
+    }
+  ],
+  "mutation_proof": null,
+  "approved": true,
+  "ticket_verified": true,
+  "baseline_commit": null,
+  "new_failures": {},
+  "uncomparable_failures": [],
+  "harness": {
+    "version": null,
+    "commit": "423de045c0081e286e7b58e5ff0959b2466a890b",
+    "dirty": false,
+    "source": "checkout"
+  },
+  "toolchain": {
+    "pytest": "8.4.2",
+    "ruff": "0.15.18",
+    "PyYAML": "6.0.2"
+  },
+  "passed": true,
+  "passed_modulo_baseline": false
+}

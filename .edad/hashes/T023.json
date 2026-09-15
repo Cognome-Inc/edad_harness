@@ -1,0 +1,93 @@
+{
+  "tests/test_refused_iteration.py": "97071c978507c8c096800ce97a9b5e32e982ad9f3d871e5c8666f241431ad2b1",
+  "tests/test_gate_refusal.py": "bb3a2f6d25885f1127bcc71d16a5085d849daaa8300e44e15d2bbeb1e937da14",
+  "_edad": {
+    "approved_at": "2026-09-15T14:31:05.324460+00:00",
+    "ticket_sha256": "e09d3e964f9783ee49c3c85f59f7b32d688ba316baf20f58a7963b04672e3f4f",
+    "decisions": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D5",
+      "D7"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_refused_iteration.py::test_a_refused_iteration_is_logged_then_the_session_aborts -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_refused_iteration.py::test_a_refused_iteration_is_logged_then_the_session_aborts"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_refused_iteration.py::test_the_refused_iteration_carries_the_verdict_the_commit_and_the_agent_tail -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_refused_iteration.py::test_the_refused_iteration_carries_the_verdict_the_commit_and_the_agent_tail"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_refused_iteration.py::test_a_refused_night_that_committed_is_not_a_no_commit_abort -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_refused_iteration.py::test_a_refused_night_that_committed_is_not_a_no_commit_abort"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_refused_iteration.py::test_a_refusal_after_the_worktree_changed_the_pins_does_not_advise_installing_them -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_refused_iteration.py::test_a_refusal_after_the_worktree_changed_the_pins_does_not_advise_installing_them"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_refused_iteration.py::test_a_refusal_after_an_out_of_scope_pin_change_names_the_stray_in_the_log -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_refused_iteration.py::test_a_refusal_after_an_out_of_scope_pin_change_names_the_stray_in_the_log"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_refused_iteration.py::test_a_refusal_after_a_frozen_pin_change_names_the_frozen_file_not_the_scope -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_refused_iteration.py::test_a_refusal_after_a_frozen_pin_change_names_the_frozen_file_not_the_scope"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-09-15T14:31:03.704406+00:00",
+      "commit": "cde921a43442bef0a6b2c97a4ee6ac6c7080e482",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_refused_iteration.py::test_a_refused_iteration_is_logged_then_the_session_aborts": 1,
+            "pytest:tests/test_refused_iteration.py::test_the_refused_iteration_carries_the_verdict_the_commit_and_the_agent_tail": 1,
+            "pytest:tests/test_refused_iteration.py::test_a_refused_night_that_committed_is_not_a_no_commit_abort": 1,
+            "pytest:tests/test_refused_iteration.py::test_a_refusal_after_the_worktree_changed_the_pins_does_not_advise_installing_them": 1,
+            "pytest:tests/test_refused_iteration.py::test_a_refusal_after_an_out_of_scope_pin_change_names_the_stray_in_the_log": 1,
+            "pytest:tests/test_refused_iteration.py::test_a_refusal_after_a_frozen_pin_change_names_the_frozen_file_not_the_scope": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "cde921a43442bef0a6b2c97a4ee6ac6c7080e482",
+      "dirty": false,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "8.4.2",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2"
+    }
+  }
+}
