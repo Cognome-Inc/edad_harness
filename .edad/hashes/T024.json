@@ -1,0 +1,124 @@
+{
+  "tests/test_session_image.py": "daa04d4b3083ee72c8eaa4373d90a20177cfeb21aeb8e1d5cd2cdd4cd74cb919",
+  "_edad": {
+    "approved_at": "2026-09-15T17:14:36.053481+00:00",
+    "ticket_sha256": "8a7c50c5e49a262adacccbffc5d4edcf33b7e0656356e4a9edb30e9ba5b58d0e",
+    "decisions": [
+      "D2",
+      "D4",
+      "D5",
+      "D9",
+      "D11",
+      "D12"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_a_stale_image_is_refused_at_preflight_naming_each_tool_and_the_rebuild_command -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_a_stale_image_is_refused_at_preflight_naming_each_tool_and_the_rebuild_command"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_the_queue_refuses_a_stale_image_at_plan_time -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_the_queue_refuses_a_stale_image_at_plan_time"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_a_matching_image_is_accepted_after_validate_network_and_asks_once -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_a_matching_image_is_accepted_after_validate_network_and_asks_once"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_an_unsandboxed_run_never_probes_the_image -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_an_unsandboxed_run_never_probes_the_image"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_the_image_probe_asks_once_for_every_pinned_name -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_the_image_probe_asks_once_for_every_pinned_name"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_an_image_probe_that_could_not_run_is_refused -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_an_image_probe_that_could_not_run_is_refused"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_quickstart_quotes_the_rebuild_command_the_refusal_names -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_quickstart_quotes_the_rebuild_command_the_refusal_names"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_the_image_probe_runs_on_dry_run -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_the_image_probe_runs_on_dry_run"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_quickstart_says_the_layered_image_needs_rebuilding_too -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_quickstart_says_the_layered_image_needs_rebuilding_too"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_quickstart_dry_runs_with_the_driver_that_has_the_flag -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_quickstart_dry_runs_with_the_driver_that_has_the_flag"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-09-15T17:14:33.760159+00:00",
+      "commit": "e4b3ea2199b6168600ea2bda4c8744edce906787",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_session_image.py::test_a_stale_image_is_refused_at_preflight_naming_each_tool_and_the_rebuild_command": 1,
+            "pytest:tests/test_session_image.py::test_the_queue_refuses_a_stale_image_at_plan_time": 1,
+            "pytest:tests/test_session_image.py::test_a_matching_image_is_accepted_after_validate_network_and_asks_once": 1,
+            "pytest:tests/test_session_image.py::test_an_unsandboxed_run_never_probes_the_image": 1,
+            "pytest:tests/test_session_image.py::test_the_image_probe_asks_once_for_every_pinned_name": 1,
+            "pytest:tests/test_session_image.py::test_an_image_probe_that_could_not_run_is_refused": 1,
+            "pytest:tests/test_session_image.py::test_quickstart_quotes_the_rebuild_command_the_refusal_names": 1,
+            "pytest:tests/test_session_image.py::test_quickstart_says_the_layered_image_needs_rebuilding_too": 1,
+            "pytest:tests/test_session_image.py::test_quickstart_dry_runs_with_the_driver_that_has_the_flag": 1,
+            "pytest:tests/test_session_image.py::test_the_image_probe_runs_on_dry_run": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "e4b3ea2199b6168600ea2bda4c8744edce906787",
+      "dirty": false,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "8.4.2",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2"
+    }
+  }
+}

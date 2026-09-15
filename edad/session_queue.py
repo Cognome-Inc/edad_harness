@@ -75,7 +75,14 @@ from pathlib import Path
 # to observe the order a docker night reaches them in.
 from edad.egress import EgressError, ensure_egress_proxy, remove_egress_proxy
 from edad.gate import check_freeze, harness_identity, load_ticket, repo_root, run_commands
-from edad.session import MAX_NO_PROGRESS, PROMOTED_OUTCOMES, Abort, validate_network
+from edad.session import (
+    DEFAULT_IMAGE,
+    MAX_NO_PROGRESS,
+    PROMOTED_OUTCOMES,
+    Abort,
+    validate_image,
+    validate_network,
+)
 
 # D23. How long any one command of the final gate may run.
 #
@@ -1042,16 +1049,20 @@ def work_queue(root: Path, state: RunState, created: Created, run_branch: str) -
     report_final_gate(state.final_gate)
 
 
-def prepare_tier(sandbox: str, network: str | None) -> bool:
-    """Ensure the proxy and validate the network, once per night. True if this
-    run created the proxy and so must remove it (D17).
+def prepare_tier(sandbox: str, network: str | None, root: Path) -> bool:
+    """Ensure the proxy, validate the network, and validate the image, once
+    per night. True if this run created the proxy and so must remove it
+    (D17).
 
-    Called between the plan and the branch cut (D5): a misnamed network costs
-    seconds at ticket 0 rather than a night of instant aborts that the run log
-    reports as "ran out of tickets". `ensure` comes first because
-    `validate_network`'s permit probe goes through the proxy; a docker night
-    with no network never reaches `ensure`, and `validate_network` refuses it.
-    A `none` night asks docker nothing.
+    Called between the plan and the branch cut (D5): a misnamed network or a
+    stale agent image costs seconds at ticket 0 rather than a night of
+    instant aborts that the run log reports as "ran out of tickets". `ensure`
+    comes first because `validate_network`'s permit probe goes through the
+    proxy; a docker night with no network never reaches `ensure`, and
+    `validate_network` refuses it. The image check follows the network
+    checks, on the queue's one image (there is no `--image` flag here), for
+    the same reason `preflight` orders them that way - the network refusals
+    are cheaper and plainer. A `none` night asks docker nothing at all.
 
     `Abort` and `EgressError` become `Refusal`, so `main()` prints and exits 2
     as for every other refusal. A refused validation is the run's first exit,
@@ -1065,6 +1076,7 @@ def prepare_tier(sandbox: str, network: str | None) -> bool:
         if network is not None:
             created = ensure_egress_proxy(network)
         validate_network(sandbox, network)
+        validate_image(DEFAULT_IMAGE, root, network)
     except (Abort, EgressError) as e:
         if created:
             remove_egress_proxy(network)
@@ -1113,7 +1125,7 @@ def run_queue(
         plan = plan_run(tickets, ticket_ids, done_set(root, ticket_ids, tickets))
         # After the plan, before the branch: a docker night's proxy and network
         # are validated once, with root still on `main` and no session spawned.
-        created_proxy = prepare_tier(sandbox, network)
+        created_proxy = prepare_tier(sandbox, network, root)
     except BaseException:
         # Refusal, and the bare SystemExit(2) `load_ticket` raises through
         # `gate.die()`. Cut fresh there is no branch yet and nothing to roll

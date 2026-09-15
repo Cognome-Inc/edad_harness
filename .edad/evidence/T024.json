@@ -1,0 +1,136 @@
+{
+  "ticket": "T024",
+  "started_at": "2026-09-15T17:22:55.932827+00:00",
+  "commit": "c9aff60d2880f448128fe8d38a1e9759b11ceec2",
+  "base_ref": "b46c5a5616328d53e960e7a4671dd4dcfa161ffd",
+  "gate": "full_gate",
+  "freeze_ok": true,
+  "commands_ok": true,
+  "scope_violations": [],
+  "scope_enforced": true,
+  "violations": [],
+  "changed_files": [
+    "QUICKSTART.md",
+    "edad/session.py",
+    "edad/session_queue.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest -q",
+      "exit_code": 0,
+      "duration_s": 20.51,
+      "output_tail": "........................................................................ [ 26%]\n........................................................................ [ 53%]\n........................................................................ [ 80%]\n......................................................                   [100%]\n270 passed in 20.29s\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "duration_s": 0.05,
+      "output_tail": "All checks passed!\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    }
+  ],
+  "decisions": [
+    "D2",
+    "D4",
+    "D5",
+    "D9",
+    "D11",
+    "D12"
+  ],
+  "red_proof": [
+    {
+      "command": "python3 -m pytest tests/test_session_image.py::test_a_stale_image_is_refused_at_preflight_naming_each_tool_and_the_rebuild_command -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_session_image.py::test_a_stale_image_is_refused_at_preflight_naming_each_tool_and_the_rebuild_command"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_session_image.py::test_the_queue_refuses_a_stale_image_at_plan_time -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_session_image.py::test_the_queue_refuses_a_stale_image_at_plan_time"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_session_image.py::test_a_matching_image_is_accepted_after_validate_network_and_asks_once -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_session_image.py::test_a_matching_image_is_accepted_after_validate_network_and_asks_once"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_session_image.py::test_an_unsandboxed_run_never_probes_the_image -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_session_image.py::test_an_unsandboxed_run_never_probes_the_image"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_session_image.py::test_the_image_probe_asks_once_for_every_pinned_name -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_session_image.py::test_the_image_probe_asks_once_for_every_pinned_name"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_session_image.py::test_an_image_probe_that_could_not_run_is_refused -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_session_image.py::test_an_image_probe_that_could_not_run_is_refused"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_session_image.py::test_quickstart_quotes_the_rebuild_command_the_refusal_names -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_session_image.py::test_quickstart_quotes_the_rebuild_command_the_refusal_names"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_session_image.py::test_the_image_probe_runs_on_dry_run -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_session_image.py::test_the_image_probe_runs_on_dry_run"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_session_image.py::test_quickstart_says_the_layered_image_needs_rebuilding_too -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_session_image.py::test_quickstart_says_the_layered_image_needs_rebuilding_too"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_session_image.py::test_quickstart_dry_runs_with_the_driver_that_has_the_flag -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_session_image.py::test_quickstart_dry_runs_with_the_driver_that_has_the_flag"
+      ]
+    }
+  ],
+  "mutation_proof": null,
+  "approved": true,
+  "ticket_verified": true,
+  "baseline_commit": null,
+  "new_failures": {},
+  "uncomparable_failures": [],
+  "harness": {
+    "version": null,
+    "commit": "b46c5a5616328d53e960e7a4671dd4dcfa161ffd",
+    "dirty": false,
+    "source": "checkout"
+  },
+  "toolchain": {
+    "pytest": "8.4.2",
+    "ruff": "0.15.18",
+    "PyYAML": "6.0.2"
+  },
+  "passed": true,
+  "passed_modulo_baseline": false
+}
