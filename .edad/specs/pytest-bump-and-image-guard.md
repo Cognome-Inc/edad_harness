@@ -66,6 +66,10 @@ on main, one release (`v0.1.1`) marks "records from here are made under pytest 9
    of `edad-agent:latest` (the one `--image` names), I want the bump procedure to
    tell me that image needs rebuilding too, so that following the refusal's rebuild
    command does not bring me back to the same refusal.
+10. As an operator following the procedure, I want its dry-run step to use the
+   driver that actually has a `--dry-run` flag (`edad.session run`; the queue has
+   none), so that the step meant to show me the refusal does not show me an
+   argument error instead.
 
 ## Seams
 
@@ -89,7 +93,9 @@ on main, one release (`v0.1.1`) marks "records from here are made under pytest 9
   precedent. **Exists**: yes. **Observes**: the rebuild command the refusal prints
   appears verbatim in the `## Bumping a gate pin` section, and - between the base
   rebuild and the clean dry-run - the section names the `--image` image and says it
-  is rebuilt too. **Discharges**: D5, D11.
+  is rebuilt too, and every `--dry-run` it mentions is on a line naming
+  `edad.session run`, with the queue named nowhere in the section.
+  **Discharges**: D5, D11, D12.
 - **Checkout one-liners** — **Where**: hand-run Python one-liners against the
   checkout on `main`: the pins file, the newest evidence record, `pyproject.toml`.
   **Exists**: yes. **Observes**: the pin landed, the first post-bump record says
@@ -152,7 +158,11 @@ it is rebuilt in turn. The section says so, right after the base rebuild and
 before the clean dry-run, or the procedure loops: rebuild the base, dry-run, same
 refusal (D11, amended 2026-09-15 after the first night's review; the first
 implementation gave only the base rebuild). A per-image `-t` in the constant stays
-deferred; this is documentation, tied by a frozen test like D5.
+deferred; this is documentation, tied by a frozen test like D5. The dry-run
+itself is the session driver's: only `edad.session run` has `--dry-run`, the queue
+has none, so the section's dry-run step names `edad.session run` and never the
+queue (D12, amended 2026-09-15 after the second night's review; that implementation
+put the queue's name on the step, an argparse error for whoever follows it).
 
 **The release.** None for the pin alone. `v0.1.1` after the guard and the bump are
 both on main, cut exactly as the existing Releasing section says.
@@ -197,6 +207,14 @@ meaningful run right after the first post-bump night.
   the agent redoes the work. The grill discussed the constant and deferred a
   per-image `-t`, but never asked what the procedure says about the second image -
   an unconsidered branch, not a decision reversed.
+
+- Amendment 2026-09-15, after the second night passed (`3d555a7`, tagged
+  `t024-night-3`): review found the procedure's dry-run step written as
+  `edad.session_queue run ... --dry-run`, a flag the queue does not have. D5's test
+  pins the order of `--dry-run` occurrences, not which driver they are attached to.
+  D12 added, one frozen test added, the branch reset and re-approved again; the
+  agent redoes the work. The spec said "dry-run a night" without saying which
+  driver can - the same gap as D11, one step over.
 
 Deferred from the grill, all cheap to reverse:
 
@@ -324,6 +342,16 @@ decisions:
       - QUICKSTART.md
     seam: QUICKSTART as text
     rejected: a per-image -t in the refusal's rebuild command — still deferred, one constant is the contract; leaving it to the operator to notice — the first review nearly did not
+  - id: D12
+    decision: The "## Bumping a gate pin" section's dry-run step uses `edad.session run ... --dry-run` (the only driver with the flag); the section never names session_queue; every --dry-run it mentions is on a line naming edad.session run
+    verify:
+      - python3 -m pytest tests/test_session_image.py::test_quickstart_dry_runs_with_the_driver_that_has_the_flag -q
+    frozen:
+      - tests/test_session_image.py
+    scope:
+      - QUICKSTART.md
+    seam: QUICKSTART as text
+    rejected: giving the queue a --dry-run flag so the section's command works — a feature for a doc typo, and the queue's plan-time refusal already fires before any branch is cut
 deferred:
   - Exact refusal prose beyond the pinned substrings
   - The rebuild constant's name; whether validate_image takes root or a pins list

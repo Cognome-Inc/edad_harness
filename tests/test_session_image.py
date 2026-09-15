@@ -323,6 +323,26 @@ def test_quickstart_says_the_layered_image_needs_rebuilding_too():
     )
 
 
+def test_quickstart_dry_runs_with_the_driver_that_has_the_flag():
+    """Only `edad.session run` has `--dry-run`; the queue does not. A section
+    that dry-runs through `edad.session_queue run` sends the operator to an
+    argparse error at the one step meant to show them the refusal. Every
+    `--dry-run` the section mentions has to sit on a line that names
+    `edad.session run` and none on a line that names the queue. Added after
+    the second night passed with the queue's name on that step (D12)."""
+    text = (PROJECT_ROOT / "QUICKSTART.md").read_text()
+    m = re.search(r"^## Bumping a gate pin\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    assert m, "QUICKSTART.md has no `## Bumping a gate pin` section"
+    section = m.group(1)
+    assert "session_queue" not in section, (
+        "the queue has no --dry-run flag; the section must not send the operator to it"
+    )
+    command_lines = [ln for ln in section.splitlines() if "edad.session run" in ln]
+    assert any("--dry-run" in ln for ln in command_lines), (
+        "no line in the section both names `edad.session run` and passes --dry-run"
+    )
+
+
 # --- D9: the probe runs on --dry-run ------------------------------------------
 
 
