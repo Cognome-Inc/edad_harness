@@ -199,6 +199,15 @@ def with_budget(max_iterations: int) -> dict:
 
 # --- D1: the agent is told the full gate exists ------------------------------
 
+# One sentence that both names the agent's changed/touched/modified files and
+# assigns their findings to the agent (yours / your ... to clear|fix). Word
+# boundaries keep "unchanged" and "untouched" from counting; the same-sentence
+# rule keeps the scope rule's "you may modify" from pairing with a distant "yours".
+OWNS_CHANGED_FILES = re.compile(
+    r"[^.\n]*\byou\b[^.\n]*\b(changed|touched|modified|edited)\b[^.\n]*"
+    r"\b(yours|your own|your responsibility|you must (fix|clear))\b"
+)
+
 
 def test_the_opening_prompt_names_every_full_gate_command_and_the_baseline_rule():
     """`initial_prompt` listed only `acceptance` and said "you are done when
@@ -212,7 +221,15 @@ def test_the_opening_prompt_names_every_full_gate_command_and_the_baseline_rule(
     assert text.index(ACCEPT) < text.index(LINT), "acceptance first, then the full gate"
     # The rule the three nights needed: findings in files the agent changed are
     # its own to clear, and it should run the commands itself before stopping.
-    assert "changed" in text or "touched" in text or "modified" in text
+    # Pinned as a rule, not a word: one sentence that names the agent's own
+    # changed files AND assigns the findings to it. A bare "changed" would be
+    # met by "unchanged"; a bare "yours" by the scope rule.
+    assert OWNS_CHANGED_FILES.search(text), (
+        "the prompt must say findings in files the agent changed are its own to clear"
+    )
+    assert re.search(r"\bbefore you stop\b|\byourself\b", text), (
+        "the agent must be told to run the full-gate commands itself"
+    )
 
 
 # --- D2: the full gate runs inside the loop, only on green acceptance --------
@@ -452,7 +469,16 @@ def test_the_full_gate_retry_prompt_says_acceptance_passed_and_quotes_each_failu
     rec = full_introduced()
     text = full_gate_retry_prompt(TICKET, rec, 1)
 
-    assert "acceptance" in text and "pass" in text, text
+    # Says acceptance PASSED - and not merely that something "did not pass the
+    # acceptance gate", which contains the same two words and is exactly the
+    # message D6 rejects.
+    assert re.search(r"\bacceptance\b[^.\n]*\bpassed\b", text), text
+    assert "did not pass" not in text and "Fix the implementation" not in text, (
+        "this is the acceptance retry's opening; on green code it invites the wrong edit"
+    )
+    assert text != session.retry_prompt(TICKET, rec, 1), "reusing retry_prompt is rejected"
+    # The discriminator bites: the rejected prompt fails it.
+    assert "did not pass" in session.retry_prompt(TICKET, rec, 1)
     assert "T900" in text
     assert f"$ {LINT}" in text, "the failing command, as the verifier ran it"
     assert "I001 unsorted imports" in text, "the verifier's own output, not a summary"
