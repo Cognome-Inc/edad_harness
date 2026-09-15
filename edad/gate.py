@@ -811,16 +811,36 @@ def toolchain_line(toolchain: dict) -> str:
     return "toolchain " + ", ".join(parts)
 
 
-def die_on_toolchain_mismatch(problems: list[str]) -> None:
+def die_on_toolchain_mismatch(
+    problems: list[str], *, ticket: dict | None = None, root: Path | None = None,
+    base_ref: str | None = None,
+) -> None:
     """Refuse with approve's own message - shared so evaluate and cmd_approve
-    cannot drift into two wordings of the same refusal."""
-    if problems:
-        die(
-            "the gate's toolchain does not match requirements-gate.txt: "
-            + "; ".join(problems) + ". A missing tool fails for the wrong reason "
-            "and would read as red. Install the pins: "
-            "pip install -r requirements-gate.txt"
-        )
+    cannot drift into two wordings of the same refusal.
+
+    `ticket`, `root` and `base_ref` are for `evaluate` alone: `cmd_approve`
+    calls this with just `problems`, so the defaults leave its message exactly
+    as it was. When a `base_ref` is given and the worktree changed
+    requirements-gate.txt since it, the mismatch may be the agent's own doing
+    rather than the operator's environment - installing what the agent just
+    wrote is not the fix - so the message names the change instead, and
+    whether the file is frozen or in this ticket's scope.
+    """
+    if not problems:
+        return
+    reason = "the gate's toolchain does not match requirements-gate.txt: " + "; ".join(problems)
+    if base_ref is not None and "requirements-gate.txt" in changed_files(root, base_ref):
+        if "requirements-gate.txt" in ((ticket or {}).get("frozen") or []):
+            verdict = "frozen file modified: requirements-gate.txt"
+        else:
+            ok, violations = check_scope(ticket or {}, ["requirements-gate.txt"])
+            verdict = "requirements-gate.txt is in scope" if ok else violations[0]
+        die(f"{reason}. worktree changed requirements-gate.txt: {verdict}")
+    die(
+        reason + ". A missing tool fails for the wrong reason "
+        "and would read as red. Install the pins: "
+        "pip install -r requirements-gate.txt"
+    )
 
 
 def gate_toolchain_problems(root: Path) -> list[str]:
@@ -1793,7 +1813,9 @@ def evaluate(
         die(f"ticket declares no '{gate_name}' commands")
 
     measurements = measure_toolchain(root)
-    die_on_toolchain_mismatch(toolchain_problems(measurements))
+    die_on_toolchain_mismatch(
+        toolchain_problems(measurements), ticket=ticket, root=root, base_ref=base_ref
+    )
 
     rec = Record(
         ticket=ticket["id"],

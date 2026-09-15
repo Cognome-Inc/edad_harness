@@ -978,7 +978,7 @@ def cmd_run(args) -> int:
             remove_egress_proxy(args.network)
 
 
-def run_session(root: Path, ticket: dict, args) -> int:  # noqa: PLR0915  # linear driver; splitting hides the flow
+def run_session(root: Path, ticket: dict, args) -> int:  # noqa: PLR0912, PLR0915  # linear driver; splitting hides the flow
     skipped = preflight(root, ticket, args.sandbox, args.dry_run, args.network, args.image)
 
     base = git(root, "rev-parse", "HEAD")
@@ -1024,7 +1024,14 @@ def run_session(root: Path, ticket: dict, args) -> int:  # noqa: PLR0915  # line
             commit = commit_iteration(wt, ticket["id"], n)
             made_commit = commit != prev_commit
             prev_commit = commit
-            rec = evaluate(wt, ticket, "acceptance", base)
+            try:
+                rec = evaluate(wt, ticket, "acceptance", base)
+            except Refusal as e:
+                log.iterations.append(
+                    Iteration(n, exit_code, commit, False, f"refusal:{e}", [str(e)],
+                              made_commit, out[-AGENT_TAIL:])
+                )
+                raise
             write_record(root, rec)
             sig = failure_signature(rec)
             signatures.append(sig)
