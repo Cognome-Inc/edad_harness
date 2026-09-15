@@ -67,6 +67,45 @@ result), and `Dockerfile.egress` as `edad-egress:latest`. Inside the
 container the agent runs with permissions bypassed — the container is the
 boundary. On the host it is allowed exactly the ticket's own gate commands.
 
+## Bumping a gate pin
+
+`requirements-gate.txt` pins the versions both the host gate and the agent's
+container image are measured against. A docker-tier run refuses to start
+unless the image carries exactly those pins, so bumping one takes a few
+steps, in the order the guard forces:
+
+1. Merge the pin-bump pull request to `requirements-gate.txt` on `main`.
+   Until it merges, the host's own toolchain check refuses first — on the
+   old pins there is nothing for the image check to disagree with yet — so
+   the image refusal below is only reachable after this merge.
+2. Install the new pins into the host's gate environment:
+
+       pip install -r requirements-gate.txt
+
+3. Approve the next ticket as usual.
+4. Dry-run a docker-tier night and expect the image refusal, because the
+   agent's container still carries the old pins:
+
+       python3 -m edad.session run T00N --sandbox docker --network <name> --dry-run
+
+   The refusal names each stale tool and prints the command that rebuilds
+   the base image:
+
+       docker build -f Dockerfile.agent -t edad-agent:latest .
+
+   That alone does not finish the job. The docker tier never runs the agent
+   in `edad-agent:latest` itself — it runs it in the image `--image` names,
+   built on top of that base with the target's own test dependencies layered
+   on, and that layered image keeps the old pin until it is rebuilt in turn.
+   Rebuild the base above, then rebuild the `--image` image from its own
+   Dockerfile too; skipping the second rebuild just brings the same refusal
+   back on the next dry-run.
+5. Dry-run once more and expect no refusal:
+
+       python3 -m edad.session run T00N --sandbox docker --network <name> --dry-run
+
+6. Run that night for real: the same command, minus the flag.
+
 ## Evidence
 
 Every run writes `.edad/records/<ticket>-<ts>-<sha>.json`: commit, per-check

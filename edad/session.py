@@ -47,6 +47,7 @@ from edad.egress import (
 from edad.gate import (
     Record,
     Refusal,
+    _pinned_versions,
     changed_files,
     check_freeze,
     evaluate,
@@ -71,9 +72,9 @@ PERMIT_PROBE_TIMEOUT_S = 180
 PERMIT_PROBE_PROMPT = "Reply with the single word: ok"
 # The checks a --dry-run skips, by name, so cmd_run can print them.
 DRY_RUN_SKIPS = ["oauth token", "proxy refuses", "proxy permits"]
-# T024 stub: the right type, the wrong command. The real one is quoted by the
-# image refusal and by QUICKSTART's "Bumping a gate pin" section.
-REBUILD_IMAGE_CMD = "docker build ."
+# Quoted verbatim by the image refusal and by QUICKSTART's "Bumping a gate
+# pin" section, so the doc and the message cannot drift apart.
+REBUILD_IMAGE_CMD = "docker build -f Dockerfile.agent -t edad-agent:latest ."
 # An agent that exits non-zero and commits nothing is not failing the ticket,
 # it is not running. One retry absorbs a transient; two in a row is systematic.
 MAX_NO_PROGRESS = 2
@@ -186,15 +187,52 @@ def preflight(  # noqa: PLR0913  # the run's five knobs, passed through; not fiv
     # one's message is about a network, and "cannot report on it" is a poor way
     # to say docker is not installed.
     skipped = validate_network(sandbox, network, image, dry_run)
-    validate_image(image, root, network)  # T024 stub wiring: every tier, wrongly
+    if sandbox == "docker":
+        validate_image(image, root, network)
     return skipped
 
 
 def validate_image(image: str, root: Path, network: str | None) -> None:
-    """T024 stub. Asks an image named nothing about nothing and refuses
-    nothing: the right shape, the wrong answer, so every frozen test fails by
-    asserting rather than by an exception it did not look at."""
-    probe_container(str(network), "", "")
+    """Refuse a docker-tier run whose agent image does not carry exactly the
+    versions requirements-gate.txt pins.
+
+    Nothing pinned - no file, or a file with no `==` line - means nothing to
+    compare against, so this returns without probing at all: the same rule
+    `gate_toolchain_problems` follows for the host. Otherwise one throwaway
+    container is asked, with a script that prints one `<name>==<version>`
+    line per pinned name via `importlib.metadata.version`, and every value
+    that disagrees with its pin is named - the ones that match are not.
+    """
+    pins = _pinned_versions(root)
+    if not pins:
+        return
+    script = "import importlib.metadata\n" + "\n".join(
+        f'print("{name}==" + importlib.metadata.version({name!r}))' for name, _ in pins
+    )
+    answer = probe_container(network, image, script)
+    if answer is None:
+        raise Abort(f"could not probe image {image} for its toolchain versions")
+    code, output = answer
+    if code != 0:
+        raise Abort(
+            f"could not probe image {image} for its toolchain versions: {output}"
+        )
+    found = {}
+    for line in output.splitlines():
+        name, _, version = line.partition("==")
+        if version:
+            found[name] = version
+    mismatches = [
+        f"{name} {found.get(name)}, pinned {pinned}"
+        for name, pinned in pins
+        if found.get(name) != pinned
+    ]
+    if mismatches:
+        raise Abort(
+            f"image {image} does not match requirements-gate.txt: "
+            + "; ".join(mismatches)
+            + f". Rebuild it: {REBUILD_IMAGE_CMD}"
+        )
 
 
 def docker_network_internal(name: str) -> str | None:
