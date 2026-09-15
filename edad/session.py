@@ -5,7 +5,7 @@ Runs one ticket unattended. The loop terminates on the gate's exit code, never
 on the agent's claim to be finished — an agent cannot produce a passing verdict
 except by satisfying acceptance tests it is not permitted to edit.
 
-  worktree  ->  [ prompt -> agent -> commit -> gate ]xN  ->  full gate  ->  evidence
+  worktree  ->  [ prompt -> agent -> commit -> acceptance -> (full gate) ]xN  ->  evidence
 
 Nothing is merged to a mainline branch. A finished session leaves a branch and
 a signed-off record; the merge decision stays with a human.
@@ -97,6 +97,14 @@ class Unwinnable(Abort):
     as specified - a defect in Prepare, not a failure in Build. Across a run of
     sessions that is the count worth having: how often the ticket-writing, not
     the agent, was the problem.
+    """
+
+
+class Introduced(Abort):
+    """The full gate failed only in ways this ticket introduced, with acceptance
+    green. Not raised by `full_gate_failure` itself - handed back so the caller
+    can retry instead of ending the night. It ends up as an Abort only if the
+    ticket's iteration budget runs out while it keeps recurring.
     """
 
 
@@ -631,7 +639,8 @@ def initial_prompt(ticket: dict, sandbox: str = "none", network: str | None = No
     scope = "\n".join(f"  - {s}" for s in ticket.get("scope") or [])
     frozen = "\n".join(f"  - {s}" for s in ticket.get("frozen") or [])
     accept = "\n".join(f"  {c}" for c in ticket.get("acceptance") or [])
-    network_item = f"4. {network_rule(sandbox, cont_indent='   ', network=network)}"
+    full_gate = "\n".join(f"  {c}" for c in ticket.get("full_gate") or [])
+    network_item = f"5. {network_rule(sandbox, cont_indent='   ', network=network)}"
     return f"""You are implementing ticket {ticket['id']}: {ticket.get('title', '')}
 
 {ticket.get('_body', '')}
@@ -651,6 +660,16 @@ them ends the session immediately and discards the work.
    complete. Your own assessment is not consulted. Run them yourself as you go;
    the same commands decide the verdict:
 {accept}
+
+4. Once those pass, this wider gate also runs, in the same iteration, before
+   you stop. Run these yourself too, and clear anything they find, before you
+   consider yourself done:
+{full_gate}
+
+   Its findings are judged against a baseline: a failure already present before
+   this ticket is not held against you. A finding in a file you changed is yours
+   to fix, whether or not that file is in your declared scope: a broken import
+   or a changed call in a file outside scope is still something your edit caused.
 
 {network_item}
 
@@ -689,7 +708,28 @@ and the frozen tests stay untouched.
 
 def full_gate_retry_prompt(ticket: dict, rec: Record, iteration: int, sandbox: str = "none",
                            network: str | None = None) -> str:
-    return ""  # T025 stub: wrong value, replace
+    def describe(c) -> str:
+        if c.timed_out:
+            return (
+                f"$ {c.command}\nKILLED after {c.duration_s}s - this command did not "
+                f"finish and reported no result. Something is not terminating. The "
+                f"output below is partial:\n{c.output_tail[-1500:]}"
+            )
+        return f"$ {c.command}\nexit {c.exit_code}\n{c.output_tail[-1500:]}"
+
+    fails = "\n\n".join(describe(c) for c in rec.commands if not c.ok)
+    return f"""Iteration {iteration} of ticket {ticket['id']}: acceptance passed, but the
+wider full gate found failures this ticket introduced.
+
+This is the verifier's own output, not a summary:
+
+{fails}
+
+Fix these too before you stop. The same constraints apply: only the files in
+scope, and the frozen tests stay untouched.
+
+{network_rule(sandbox, network=network)}
+"""
 
 
 # --- agent invocation ------------------------------------------------------
@@ -902,7 +942,12 @@ class Iteration:
     # without it an infrastructure failure (a 401, a crash) is indistinguishable
     # from a failing implementation, and has to be reconstructed by hand.
     agent_output: str = ""
-    full_gate: str | None = "stub"  # T025 stub: wrong value, replace
+    # What the full gate found, when it ran in this iteration: "passed",
+    # "passed_modulo_baseline" or "introduced". None when it did not run
+    # (acceptance failed, or the full gate was refused before a verdict) and
+    # also when it ran and ended the night as unwinnable or uncomparable,
+    # since the abort reason already carries that.
+    full_gate: str | None = None
 
 
 @dataclass
@@ -937,9 +982,35 @@ def commit_iteration(wt: Path, ticket_id: str, n: int) -> str:
 PROMOTED_OUTCOMES = frozenset({"passed", "passed_modulo_baseline"})
 
 
+def full_gate_signature(full: Record) -> str:
+    """D4: what a green-acceptance iteration contributes to the repeat-kill
+    signature list, instead of `failure_signature`'s constant hash of a green
+    record.
+
+    `full.new_failures` already carries the ratchet's own keys - stable where
+    raw output (line numbers, ordering) is not - so repeated identical findings
+    are detectable and a passing full gate contributes the empty string.
+    """
+    keys = sorted(k for ks in full.new_failures.values() for k in ks)
+    return "full_gate:" + "|".join(keys) if keys else ""
+
+
+def describe_introduced(full: Record) -> str:
+    """`<command> -> <key>, <key>` per command with introduced findings, joined
+    by `; ` - the shape `full_gate_failure` prints, reused so the exhaustion
+    reason (D7) does not drift from it."""
+    introduced = {c: k for c, k in full.new_failures.items() if k}
+    return "; ".join(f"{c} -> {', '.join(k)}" for c, k in introduced.items())
+
+
 def full_gate_failure(ticket: dict, full: Record) -> Abort:
-    """Which kind of stop a failed full_gate is. Returns the exception; the
-    caller raises it, following check_kills.
+    """Which kind of stop a failed full_gate is. Returns the exception.
+
+    An `Introduced` is not raised by the caller - it is handed back so
+    `run_session` can retry instead of ending the night. Every other return
+    (`Unwinnable`, or an `Abort` naming an uncomparable baseline or the
+    fall-through case) is raised, following check_kills, exactly as before this
+    ticket taught the loop to retry the introduced case.
 
     Only callable meaningfully once acceptance is green, which is the whole
     reason it can decide anything. At approve time a full_gate failure naming
@@ -981,9 +1052,9 @@ def full_gate_failure(ticket: dict, full: Record) -> Abort:
 
     introduced = {c: k for c, k in full.new_failures.items() if k}
     if introduced:
-        return Abort(
+        return Introduced(
             "acceptance passed but full_gate found failures this ticket introduced: "
-            + "; ".join(f"{c} -> {', '.join(k)}" for c, k in introduced.items())
+            + describe_introduced(full)
         )
     return Abort("acceptance passed but full_gate failed: " + "; ".join(full.violations))
 
@@ -1063,6 +1134,7 @@ def run_session(root: Path, ticket: dict, args) -> int:  # noqa: PLR0912, PLR091
     max_iter = (ticket.get("kill_conditions") or {}).get("max_iterations", 6)
     signatures: list[str] = []
     rec: Record | None = None
+    full: Record | None = None
     prev_commit = base
     no_progress = 0
 
@@ -1089,13 +1161,45 @@ def run_session(root: Path, ticket: dict, args) -> int:  # noqa: PLR0912, PLR091
                 )
                 raise
             write_record(root, rec)
+
+            full = None
+            full_gate_field: str | None = None
+            violations = list(rec.violations)
             sig = failure_signature(rec)
+
+            # The full gate runs inside the same iteration, only once acceptance
+            # is green - it has nothing to ratchet against a diff that does not
+            # yet pass its own tests.
+            if rec.passed:
+                try:
+                    full = evaluate(wt, ticket, "full_gate", base)
+                except Refusal:
+                    log.iterations.append(
+                        Iteration(n, exit_code, commit, True, sig, violations,
+                                  made_commit, out[-AGENT_TAIL:], None)
+                    )
+                    raise
+                write_record(root, full)
+                violations = violations + list(full.violations)
+                sig = full_gate_signature(full)
+                if full.passed or full.passed_modulo_baseline:
+                    full_gate_field = "passed" if full.passed else "passed_modulo_baseline"
+                else:
+                    failure = full_gate_failure(ticket, full)
+                    if not isinstance(failure, Introduced):
+                        log.iterations.append(
+                            Iteration(n, exit_code, commit, True, sig, violations,
+                                      made_commit, out[-AGENT_TAIL:], None)
+                        )
+                        raise failure
+                    full_gate_field = "introduced"
+
             signatures.append(sig)
             log.iterations.append(
-                Iteration(n, exit_code, commit, rec.passed, sig, list(rec.violations),
-                          made_commit, out[-AGENT_TAIL:])
+                Iteration(n, exit_code, commit, rec.passed, sig, violations,
+                          made_commit, out[-AGENT_TAIL:], full_gate_field)
             )
-            print(f"gate: {'PASS' if rec.passed else 'FAIL'}  {'; '.join(rec.violations)}")
+            print(f"gate: {'PASS' if rec.passed else 'FAIL'}  {'; '.join(violations)}")
 
             # Checked before check_kills: when the agent never ran, the gate's
             # failure signature describes the frozen test rather than the cause,
@@ -1115,16 +1219,19 @@ def run_session(root: Path, ticket: dict, args) -> int:  # noqa: PLR0912, PLR091
             reason = check_kills(ticket, rec, wt, base, signatures)
             if reason:
                 raise Abort(reason)
-            if rec.passed:
+            if full is not None and (full.passed or full.passed_modulo_baseline):
                 break
-            prompt = retry_prompt(ticket, rec, n, args.sandbox, args.network)
+            if rec.passed:
+                prompt = full_gate_retry_prompt(ticket, full, n, args.sandbox, args.network)
+            else:
+                prompt = retry_prompt(ticket, rec, n, args.sandbox, args.network)
         else:
+            if rec is not None and rec.passed and full is not None:
+                raise Abort(
+                    f"exhausted {max_iter} iterations: acceptance passed, full_gate "
+                    "still failing: " + describe_introduced(full)
+                )
             raise Abort(f"exhausted {max_iter} iterations without passing the gate")
-
-        full = evaluate(wt, ticket, "full_gate", base)
-        write_record(root, full)
-        if not (full.passed or full.passed_modulo_baseline):
-            raise full_gate_failure(ticket, full)
 
         dest = promote_evidence(root, wt, ticket["id"], full)
         log.outcome = "passed" if full.passed else "passed_modulo_baseline"
