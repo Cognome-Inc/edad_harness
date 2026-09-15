@@ -1,7 +1,7 @@
 {
-  "tests/test_full_gate_retry.py": "206ffdb35a9aeea7d0de467c556a4b25c0dc571a9e4b32d73f3df11e6c9cff0e",
+  "tests/test_full_gate_retry.py": "e8e46f2ae347bfb6a57889cad0f50352c293d054c6a1ca381bee0d0b10e776df",
   "_edad": {
-    "approved_at": "2026-09-15T19:15:56.324594+00:00",
+    "approved_at": "2026-09-15T19:52:39.084367+00:00",
     "ticket_sha256": "e524704fdee4d9b224fda6feffa3e34d7a4800fe01748ae27469a8b450acb759",
     "decisions": [
       "D1",
@@ -123,8 +123,8 @@
     ],
     "mutation_proof": null,
     "full_gate_baseline": {
-      "taken_at": "2026-09-15T19:15:53.091491+00:00",
-      "commit": "f657e77c00bc4d3ba9b44af511e05ffa910854fb",
+      "taken_at": "2026-09-15T19:52:36.024455+00:00",
+      "commit": "93f65f9c9dc9d13f23feb6419198a7ed58d739ab",
       "commands": {
         "python3 -m pytest -q": {
           "exit_code": 1,
@@ -154,7 +154,7 @@
     },
     "harness": {
       "version": null,
-      "commit": "f657e77c00bc4d3ba9b44af511e05ffa910854fb",
+      "commit": "93f65f9c9dc9d13f23feb6419198a7ed58d739ab",
       "dirty": true,
       "source": "checkout"
     },
