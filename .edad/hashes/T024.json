@@ -1,13 +1,14 @@
 {
-  "tests/test_session_image.py": "0aa674090b9e4a417dc35a69ff6e04e64dbbb9d7de51956dfcad48a4c224882f",
+  "tests/test_session_image.py": "d94386d0f92b8a22d7d06adc2f38da685c06f429f9a859b908090daeebd45ae4",
   "_edad": {
-    "approved_at": "2026-09-15T16:39:16.845757+00:00",
-    "ticket_sha256": "649b12135a7e6ed3f1afceaa2f028be00e7dba5a73dcdbef908cb8b70bd14493",
+    "approved_at": "2026-09-15T17:08:09.354994+00:00",
+    "ticket_sha256": "d658e20c0bc383a61c2135c54e986719137073fa366f44efa0d34dd5689cc2be",
     "decisions": [
       "D2",
       "D4",
       "D5",
-      "D9"
+      "D9",
+      "D11"
     ],
     "red_proof": [
       {
@@ -65,12 +66,19 @@
         "detected_by": [
           "tests/test_session_image.py::test_the_image_probe_runs_on_dry_run"
         ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_quickstart_says_the_layered_image_needs_rebuilding_too -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_quickstart_says_the_layered_image_needs_rebuilding_too"
+        ]
       }
     ],
     "mutation_proof": null,
     "full_gate_baseline": {
-      "taken_at": "2026-09-15T16:39:14.798730+00:00",
-      "commit": "0711136780b851b67eb7a6fe40b87983777cda66",
+      "taken_at": "2026-09-15T17:08:07.369066+00:00",
+      "commit": "20f492326010525fd9985fb433cae3991facc638",
       "commands": {
         "python3 -m pytest -q": {
           "exit_code": 1,
@@ -82,6 +90,7 @@
             "pytest:tests/test_session_image.py::test_the_image_probe_asks_once_for_every_pinned_name": 1,
             "pytest:tests/test_session_image.py::test_an_image_probe_that_could_not_run_is_refused": 1,
             "pytest:tests/test_session_image.py::test_quickstart_quotes_the_rebuild_command_the_refusal_names": 1,
+            "pytest:tests/test_session_image.py::test_quickstart_says_the_layered_image_needs_rebuilding_too": 1,
             "pytest:tests/test_session_image.py::test_the_image_probe_runs_on_dry_run": 1
           }
         },
@@ -93,7 +102,7 @@
     },
     "harness": {
       "version": null,
-      "commit": "0711136780b851b67eb7a6fe40b87983777cda66",
+      "commit": "20f492326010525fd9985fb433cae3991facc638",
       "dirty": false,
       "source": "checkout"
     },
