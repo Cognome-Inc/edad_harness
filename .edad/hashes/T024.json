@@ -1,14 +1,15 @@
 {
-  "tests/test_session_image.py": "d94386d0f92b8a22d7d06adc2f38da685c06f429f9a859b908090daeebd45ae4",
+  "tests/test_session_image.py": "daa04d4b3083ee72c8eaa4373d90a20177cfeb21aeb8e1d5cd2cdd4cd74cb919",
   "_edad": {
-    "approved_at": "2026-09-15T17:08:09.354994+00:00",
-    "ticket_sha256": "d658e20c0bc383a61c2135c54e986719137073fa366f44efa0d34dd5689cc2be",
+    "approved_at": "2026-09-15T17:14:36.053481+00:00",
+    "ticket_sha256": "8a7c50c5e49a262adacccbffc5d4edcf33b7e0656356e4a9edb30e9ba5b58d0e",
     "decisions": [
       "D2",
       "D4",
       "D5",
       "D9",
-      "D11"
+      "D11",
+      "D12"
     ],
     "red_proof": [
       {
@@ -73,12 +74,19 @@
         "detected_by": [
           "tests/test_session_image.py::test_quickstart_says_the_layered_image_needs_rebuilding_too"
         ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_quickstart_dry_runs_with_the_driver_that_has_the_flag -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_quickstart_dry_runs_with_the_driver_that_has_the_flag"
+        ]
       }
     ],
     "mutation_proof": null,
     "full_gate_baseline": {
-      "taken_at": "2026-09-15T17:08:07.369066+00:00",
-      "commit": "20f492326010525fd9985fb433cae3991facc638",
+      "taken_at": "2026-09-15T17:14:33.760159+00:00",
+      "commit": "e4b3ea2199b6168600ea2bda4c8744edce906787",
       "commands": {
         "python3 -m pytest -q": {
           "exit_code": 1,
@@ -91,6 +99,7 @@
             "pytest:tests/test_session_image.py::test_an_image_probe_that_could_not_run_is_refused": 1,
             "pytest:tests/test_session_image.py::test_quickstart_quotes_the_rebuild_command_the_refusal_names": 1,
             "pytest:tests/test_session_image.py::test_quickstart_says_the_layered_image_needs_rebuilding_too": 1,
+            "pytest:tests/test_session_image.py::test_quickstart_dry_runs_with_the_driver_that_has_the_flag": 1,
             "pytest:tests/test_session_image.py::test_the_image_probe_runs_on_dry_run": 1
           }
         },
@@ -102,7 +111,7 @@
     },
     "harness": {
       "version": null,
-      "commit": "20f492326010525fd9985fb433cae3991facc638",
+      "commit": "e4b3ea2199b6168600ea2bda4c8744edce906787",
       "dirty": false,
       "source": "checkout"
     },
