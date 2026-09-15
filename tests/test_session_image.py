@@ -295,6 +295,34 @@ def test_quickstart_quotes_the_rebuild_command_the_refusal_names(monkeypatch, tm
     )
 
 
+def test_quickstart_says_the_layered_image_needs_rebuilding_too():
+    """The docker tier does not run the agent in `edad-agent:latest` itself but
+    in an image built on top of it with the target's test dependencies layered
+    on, the one `--image` names (QUICKSTART's own docker-tier paragraph). The
+    refusal quotes the base rebuild - one constant, per D5 - and rebuilding the
+    base alone leaves the layered image at the old pin, so the clean dry-run
+    refuses again and the procedure loops. The section has to say so, where it
+    matters: after the base rebuild and before the second dry-run, name the
+    `--image` image and say it is rebuilt too. Added after the first night
+    passed without it (D11)."""
+    text = (PROJECT_ROOT / "QUICKSTART.md").read_text()
+    m = re.search(r"^## Bumping a gate pin\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    assert m, "QUICKSTART.md has no `## Bumping a gate pin` section"
+    section = m.group(1)
+    rebuild = section.index(REBUILD_IMAGE_CMD)
+    last_dry = section.rindex("--dry-run")
+    assert rebuild < last_dry, "the clean dry-run comes after the rebuild"
+    between = section[rebuild + len(REBUILD_IMAGE_CMD):last_dry]
+    assert "--image" in between, (
+        "between the base rebuild and the clean dry-run, the section never names "
+        "the layered image `--image` points at"
+    )
+    assert re.search(r"rebuil[dt]", between), (
+        "the section never says the layered image is rebuilt too - following the "
+        "refusal's hint alone brings the same refusal back"
+    )
+
+
 # --- D9: the probe runs on --dry-run ------------------------------------------
 
 

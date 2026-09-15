@@ -62,6 +62,10 @@ on main, one release (`v0.1.1`) marks "records from here are made under pytest 9
 8. As a reader of evidence, I want the first record after the bump to say
    `toolchain.pytest: 9.0.3`, so that which pins a record was made under is in the
    record and not in anyone's memory.
+9. As an operator on the docker tier, whose agent runs in an image layered on top
+   of `edad-agent:latest` (the one `--image` names), I want the bump procedure to
+   tell me that image needs rebuilding too, so that following the refusal's rebuild
+   command does not bring me back to the same refusal.
 
 ## Seams
 
@@ -83,7 +87,9 @@ on main, one release (`v0.1.1`) marks "records from here are made under pytest 9
 - **QUICKSTART as text** — **Where**: the file read as text and the constant
   imported from the session module; T018's pinned-install-line test is the
   precedent. **Exists**: yes. **Observes**: the rebuild command the refusal prints
-  appears verbatim in the `## Bumping a gate pin` section. **Discharges**: D5.
+  appears verbatim in the `## Bumping a gate pin` section, and - between the base
+  rebuild and the clean dry-run - the section names the `--image` image and says it
+  is rebuilt too. **Discharges**: D5, D11.
 - **Checkout one-liners** — **Where**: hand-run Python one-liners against the
   checkout on `main`: the pins file, the newest evidence record, `pyproject.toml`.
   **Exists**: yes. **Observes**: the pin landed, the first post-bump record says
@@ -138,7 +144,15 @@ is deferred.
 pin PR, install the pins on the host, approve the next ticket, dry-run and expect
 the image refusal, rebuild, dry-run again and expect none, then run that night for
 real. Its first real use is the pytest bump; the night that follows is the
-evidence the bump took effect.
+evidence the bump took effect. The rebuild step has two halves on the documented
+docker tier: the refusal quotes the base rebuild (one constant, D5), but the agent
+runs in an image built on top of that base with the target's test dependencies
+layered on - the one `--image` names - and that image only follows the base when
+it is rebuilt in turn. The section says so, right after the base rebuild and
+before the clean dry-run, or the procedure loops: rebuild the base, dry-run, same
+refusal (D11, amended 2026-09-15 after the first night's review; the first
+implementation gave only the base rebuild). A per-image `-t` in the constant stays
+deferred; this is documentation, tied by a frozen test like D5.
 
 **The release.** None for the pin alone. `v0.1.1` after the guard and the bump are
 both on main, cut exactly as the existing Releasing section says.
@@ -173,6 +187,16 @@ frozen file `tests/test_session_image.py`.
 
 D8's check reads the newest evidence record by modification time, so it is only
 meaningful run right after the first post-bump night.
+
+- Amendment 2026-09-15, after the first night passed (`2a8112a`, tagged
+  `t024-night-2`): review found the bump procedure loops on the documented docker
+  setup. The refusal's hint rebuilds `edad-agent:latest`, but QUICKSTART's docker
+  tier runs the agent in an image layered on top of it (`--image`), which keeps the
+  old pin until rebuilt itself - follow the hint, dry-run, same refusal. D11 added,
+  one frozen test added, the branch reset to the contract commits and re-approved;
+  the agent redoes the work. The grill discussed the constant and deferred a
+  per-image `-t`, but never asked what the procedure says about the second image -
+  an unconsidered branch, not a decision reversed.
 
 Deferred from the grill, all cheap to reverse:
 
@@ -290,6 +314,16 @@ decisions:
       - QUICKSTART.md
     seam: checkout one-liners
     rejected: no release at all — the record already says which pins; a release before and after — two releases for one pin
+  - id: D11
+    decision: The "## Bumping a gate pin" section says the layered image `--image` names (the target's deps on top of edad-agent:latest) must be rebuilt too, placed after the base rebuild command and before the clean dry-run, so following the refusal's hint alone does not bring the same refusal back; documentation only, the constant is unchanged
+    verify:
+      - python3 -m pytest tests/test_session_image.py::test_quickstart_says_the_layered_image_needs_rebuilding_too -q
+    frozen:
+      - tests/test_session_image.py
+    scope:
+      - QUICKSTART.md
+    seam: QUICKSTART as text
+    rejected: a per-image -t in the refusal's rebuild command — still deferred, one constant is the contract; leaving it to the operator to notice — the first review nearly did not
 deferred:
   - Exact refusal prose beyond the pinned substrings
   - The rebuild constant's name; whether validate_image takes root or a pins list
