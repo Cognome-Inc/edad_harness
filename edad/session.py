@@ -687,6 +687,11 @@ and the frozen tests stay untouched.
 """
 
 
+def full_gate_retry_prompt(ticket: dict, rec: Record, iteration: int, sandbox: str = "none",
+                           network: str | None = None) -> str:
+    return ""  # T025 stub: wrong value, replace
+
+
 # --- agent invocation ------------------------------------------------------
 
 
@@ -897,6 +902,7 @@ class Iteration:
     # without it an infrastructure failure (a 401, a crash) is indistinguishable
     # from a failing implementation, and has to be reconstructed by hand.
     agent_output: str = ""
+    full_gate: str | None = "stub"  # T025 stub: wrong value, replace
 
 
 @dataclass
