@@ -162,6 +162,33 @@ def test_a_refusal_after_an_out_of_scope_pin_change_names_the_stray_in_the_log(
     assert any(f"out of scope: {PINS}" in v for v in it["violations"]), it["violations"]
 
 
+# --- D7: a frozen pins file is named as frozen, not as in scope --------------------
+
+
+def test_a_refusal_after_a_frozen_pin_change_names_the_frozen_file_not_the_scope(
+    monkeypatch, tmp_path
+):
+    """Same refusal, a ticket that freezes the pins file instead of scoping it.
+    `check_scope` admits every frozen path on the assumption that the hash check
+    caught any change first - on the refusal path it has not run yet, so a frozen
+    file the agent rewrote would read as "in scope". The reason names it in the
+    freeze check's own wording, `frozen file modified: <file>`, and never as in
+    scope, so the log records what happened: a frozen file was rewritten."""
+    night, _ = refused_night(monkeypatch, tmp_path, changed=[PINS])
+    ticket = {**TICKET, "scope": ["edad/session.py"], "frozen": [*TICKET["frozen"], PINS]}
+
+    run_session(night.root, ticket, night.args)
+
+    log = night.log()
+    reason = log["abort_reason"] or ""
+    assert f"worktree changed {PINS}" in reason, reason
+    assert f"frozen file modified: {PINS}" in reason, reason
+    assert "in scope" not in reason, "a frozen file is not a scoped one: " + reason
+    assert "pip install" not in reason, reason
+    [it] = log["iterations"]
+    assert any(f"frozen file modified: {PINS}" in v for v in it["violations"]), it["violations"]
+
+
 # --- D6: green at base - the pins unchanged, the advice unchanged -------------------
 
 

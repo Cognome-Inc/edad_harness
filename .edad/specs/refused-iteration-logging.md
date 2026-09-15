@@ -53,6 +53,9 @@ pre-flight check, judge the operator's own checkout and keep their wording.
    ran.
 5. As the operator approving a ticket on my own checkout, I want the existing
    "install the pins" advice unchanged, because there it is correct.
+7. As the operator, I want a refusal after the agent rewrote a *frozen* pins file to
+   say the file is frozen, not "in scope", so that the log records what happened —
+   a frozen file was rewritten — even though the freeze check never ran.
 6. As the author of the pytest bump ticket, I want a refused session to stop after
    one iteration rather than retry, so that the bump does not spend a night's
    iteration budget being refused for the same reason each time.
@@ -105,7 +108,13 @@ defaults. Only `evaluate` passes them, and only when a base reference is set and
 pins file is among the files changed since that base. In that case the message keeps
 the frozen prefix, states that the worktree changed the pins file, states whether the
 file is in scope (using the existing "out of scope: <file>" wording for a stray),
-and omits the install advice. With no base reference the changed-files check is not
+and omits the install advice. One case is asked before the scope verdict: if the
+pins file is in the ticket's `frozen` list, the message says so in the freeze check's
+own wording, "frozen file modified: <file>", and never "in scope". `check_scope`
+admits every frozen path on the assumption that the hash check caught any change
+first; on the refusal path it has not run, so without this a rewritten frozen file
+would be reported as in scope (D7, amended 2026-09-15 after the first night's review;
+the first implementation had exactly that misreport). With no base reference the changed-files check is not
 run at all — that path is exercised by an existing frozen test in a directory that
 is not a git repository — and the wording is unchanged. With the pins unchanged the
 wording is unchanged. Approve's call and the pre-flight's own message are not
@@ -151,6 +160,13 @@ cannot be altered by the agent. A test needing a different ticket scope calls
   `tests/test_gate_trusted_inputs.py` (fakes a matching toolchain; never reaches the
   refusal). Neither is expected to need amendment; if one does, amend by hand
   pre-approval with `raising=False` and record it in the ticket's Context.
+
+- Amendment 2026-09-15, after the first night passed (`4ecbbac`): review found that a
+  ticket freezing `requirements-gate.txt` produced "requirements-gate.txt is in
+  scope" on the refusal path, because `check_scope` trusts the freeze check to have
+  run first. D7 added, one frozen test added, the branch reset to the contract
+  commits and re-approved; the agent redoes the work. The grill never asked "what if
+  the pins file is frozen?" — an unconsidered branch, not a decision reversed.
 
 Deferred from the grill, all cheap to reverse:
 
@@ -231,6 +247,17 @@ decisions:
       - edad/gate.py
     seam: Night session
     rejected: none
+  - id: D7
+    decision: When requirements-gate.txt is in the ticket's frozen list, the refusal names it as "frozen file modified: requirements-gate.txt" (checked against ticket["frozen"] before check_scope) and never says "in scope"; lands in iterations[0].violations like D5
+    verify:
+      - python3 -m pytest tests/test_refused_iteration.py::test_a_refusal_after_a_frozen_pin_change_names_the_frozen_file_not_the_scope -q
+    frozen:
+      - tests/test_refused_iteration.py
+      - tests/test_gate_refusal.py
+    scope:
+      - edad/gate.py
+    seam: Night session
+    rejected: changing check_scope to reject frozen paths — every happy-path caller relies on the hash check having run first; running check_freeze before the toolchain refusal — the ordering is pinned by D4's rationale
 deferred:
   - Exact prose of the two new sentences beyond the pinned substrings
   - A git failure inside changed_files on the refusal path escapes untyped (pre-existing on the happy path)
