@@ -4,6 +4,6 @@
 # at that commit, and the record's `toolchain` block says which they were.
 # Bumping a pin does not invalidate it; new records made after the bump are
 # simply made under different pins.
-pytest==8.4.2
+pytest==9.0.3
 ruff==0.15.18
 PyYAML==6.0.2
