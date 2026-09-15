@@ -1,0 +1,106 @@
+{
+  "tests/test_session_image.py": "0aa674090b9e4a417dc35a69ff6e04e64dbbb9d7de51956dfcad48a4c224882f",
+  "_edad": {
+    "approved_at": "2026-09-15T16:39:16.845757+00:00",
+    "ticket_sha256": "649b12135a7e6ed3f1afceaa2f028be00e7dba5a73dcdbef908cb8b70bd14493",
+    "decisions": [
+      "D2",
+      "D4",
+      "D5",
+      "D9"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_a_stale_image_is_refused_at_preflight_naming_each_tool_and_the_rebuild_command -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_a_stale_image_is_refused_at_preflight_naming_each_tool_and_the_rebuild_command"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_the_queue_refuses_a_stale_image_at_plan_time -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_the_queue_refuses_a_stale_image_at_plan_time"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_a_matching_image_is_accepted_after_validate_network_and_asks_once -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_a_matching_image_is_accepted_after_validate_network_and_asks_once"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_an_unsandboxed_run_never_probes_the_image -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_an_unsandboxed_run_never_probes_the_image"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_the_image_probe_asks_once_for_every_pinned_name -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_the_image_probe_asks_once_for_every_pinned_name"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_an_image_probe_that_could_not_run_is_refused -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_an_image_probe_that_could_not_run_is_refused"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_quickstart_quotes_the_rebuild_command_the_refusal_names -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_quickstart_quotes_the_rebuild_command_the_refusal_names"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_session_image.py::test_the_image_probe_runs_on_dry_run -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_session_image.py::test_the_image_probe_runs_on_dry_run"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-09-15T16:39:14.798730+00:00",
+      "commit": "0711136780b851b67eb7a6fe40b87983777cda66",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_session_image.py::test_a_stale_image_is_refused_at_preflight_naming_each_tool_and_the_rebuild_command": 1,
+            "pytest:tests/test_session_image.py::test_the_queue_refuses_a_stale_image_at_plan_time": 1,
+            "pytest:tests/test_session_image.py::test_a_matching_image_is_accepted_after_validate_network_and_asks_once": 1,
+            "pytest:tests/test_session_image.py::test_an_unsandboxed_run_never_probes_the_image": 1,
+            "pytest:tests/test_session_image.py::test_the_image_probe_asks_once_for_every_pinned_name": 1,
+            "pytest:tests/test_session_image.py::test_an_image_probe_that_could_not_run_is_refused": 1,
+            "pytest:tests/test_session_image.py::test_quickstart_quotes_the_rebuild_command_the_refusal_names": 1,
+            "pytest:tests/test_session_image.py::test_the_image_probe_runs_on_dry_run": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "0711136780b851b67eb7a6fe40b87983777cda66",
+      "dirty": false,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "8.4.2",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2"
+    }
+  }
+}
