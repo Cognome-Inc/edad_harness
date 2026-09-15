@@ -71,6 +71,9 @@ PERMIT_PROBE_TIMEOUT_S = 180
 PERMIT_PROBE_PROMPT = "Reply with the single word: ok"
 # The checks a --dry-run skips, by name, so cmd_run can print them.
 DRY_RUN_SKIPS = ["oauth token", "proxy refuses", "proxy permits"]
+# T024 stub: the right type, the wrong command. The real one is quoted by the
+# image refusal and by QUICKSTART's "Bumping a gate pin" section.
+REBUILD_IMAGE_CMD = "docker build ."
 # An agent that exits non-zero and commits nothing is not failing the ticket,
 # it is not running. One retry absorbs a transient; two in a row is systematic.
 MAX_NO_PROGRESS = 2
@@ -182,7 +185,16 @@ def preflight(  # noqa: PLR0913  # the run's five knobs, passed through; not fiv
     # Last, so the plainer refusals above (no docker at all) speak first: this
     # one's message is about a network, and "cannot report on it" is a poor way
     # to say docker is not installed.
-    return validate_network(sandbox, network, image, dry_run)
+    skipped = validate_network(sandbox, network, image, dry_run)
+    validate_image(image, root, network)  # T024 stub wiring: every tier, wrongly
+    return skipped
+
+
+def validate_image(image: str, root: Path, network: str | None) -> None:
+    """T024 stub. Asks an image named nothing about nothing and refuses
+    nothing: the right shape, the wrong answer, so every frozen test fails by
+    asserting rather than by an exception it did not look at."""
+    probe_container(str(network), "", "")
 
 
 def docker_network_internal(name: str) -> str | None:

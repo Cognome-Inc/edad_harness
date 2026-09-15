@@ -1042,7 +1042,7 @@ def work_queue(root: Path, state: RunState, created: Created, run_branch: str) -
     report_final_gate(state.final_gate)
 
 
-def prepare_tier(sandbox: str, network: str | None) -> bool:
+def prepare_tier(sandbox: str, network: str | None, root: Path) -> bool:
     """Ensure the proxy and validate the network, once per night. True if this
     run created the proxy and so must remove it (D17).
 
@@ -1113,7 +1113,7 @@ def run_queue(
         plan = plan_run(tickets, ticket_ids, done_set(root, ticket_ids, tickets))
         # After the plan, before the branch: a docker night's proxy and network
         # are validated once, with root still on `main` and no session spawned.
-        created_proxy = prepare_tier(sandbox, network)
+        created_proxy = prepare_tier(sandbox, network, root)
     except BaseException:
         # Refusal, and the bare SystemExit(2) `load_ticket` raises through
         # `gate.die()`. Cut fresh there is no branch yet and nothing to roll
