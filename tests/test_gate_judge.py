@@ -27,7 +27,9 @@ command's own `import edad` resolves to. And QUICKSTART as text.
 
 Two tests here are green before the change and stay in this file as the
 regression net `full_gate` runs: the sabotage test (D1) and the import test
-(D3). The three refusal tests and the QUICKSTART test are the acceptance.
+(D3). The three refusal tests, the worktree-versus-submodule test (D9, added
+after night 1 found `is_file()` alone also matches a submodule checkout) and
+the QUICKSTART test are the acceptance.
 
 The agent's container has no git. Every test here but the QUICKSTART one builds
 a real repository and a linked worktree, and one spawns `python3 -m edad.gate`;
@@ -275,6 +277,39 @@ def test_the_self_judge_refusal_precedes_the_base_ref_probe_and_the_toolchain_ch
     assert names(repo.wt, refused.reason), refused.reason
     assert "no-such-ref" not in refused.reason, refused.reason
     assert MISMATCH not in refused.reason, refused.reason
+
+
+# --- D9: what "linked worktree" means --------------------------------------------
+
+
+def test_a_linked_worktree_is_refused_but_a_submodule_checkout_is_not(repo, monkeypatch, tmp_path):
+    """Both have a `.git` FILE. A linked worktree's points into a `worktrees`
+    directory; a submodule checkout's points into `modules` - and that checkout
+    IS the submodule's main checkout. A harness vendored as a submodule and
+    judging itself from inside is the ordinary allowed case, not the subject
+    grading itself. `is_file()` alone cannot tell the two apart; the guard has
+    to read where the file points. Still no git: a file read.
+
+    One node for both halves so it is red wherever either is wrong: on a tree
+    with no guard (the worktree is not refused) and on one that keys on
+    `is_file()` alone (the submodule is refused)."""
+    judge = repo.wt.resolve()
+    monkeypatch.setattr(gate, "harness_checkout", lambda: judge)
+    assert names(repo.wt, repo.refusal(repo.wt).reason)
+
+    outer = tmp_path / "outer"
+    outer.mkdir()
+    _git(outer, "init", "-q", "-b", "main")
+    _git(outer, "-c", "protocol.file.allow=always", "submodule", "add", "-q", str(repo.root), "lib")
+    sub = outer / "lib"
+    assert (sub / ".git").is_file() and "modules" in (sub / ".git").read_text()
+
+    inside = sub.resolve()
+    monkeypatch.setattr(gate, "harness_checkout", lambda: inside)
+    rec = repo.evaluate(sub)
+
+    assert isinstance(rec, gate.Record), "a submodule checkout judging itself is a main checkout"
+    assert rec.freeze_ok, rec.violations
 
 
 # --- D1: the worktree's copy is never the judge (full_gate net) --------------------

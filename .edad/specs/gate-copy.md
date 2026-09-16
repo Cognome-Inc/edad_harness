@@ -85,7 +85,8 @@ own PR after the ticket merges.
   for the sabotage test — that a worktree whose own `edad/gate.py` has been
   neutered still gets its edited frozen file reported as a hash mismatch by the
   real `evaluate`. **Discharges**: D1 (safety net under `full_gate`), D2 (the
-  function half and the ordering).
+  function half and the ordering), D9 (the same seam with a real submodule
+  checkout — `git submodule add` of the temp repository — as the tree judged).
 - **the gate CLI from inside a linked worktree** - **Where**:
   `[sys.executable, "-m", "edad.gate", "run", <ticket>]` with `cwd` a linked
   worktree (`git worktree add`) of the temp repository, the repository carrying
@@ -220,6 +221,15 @@ guard was prototyped and reverted, nothing of it is in the tree.
 - The ticket body should say the agent cannot run D2's spawn test in the
   container (no git), as T026's did.
 
+- Amendment 2026-09-16, after night 1 (`e9a65a0`, tag `t027-night-1`, passed):
+  review found D2's `is_file()` test also matches a submodule checkout, whose
+  `.git` is a `gitdir:` file pointing under `modules` rather than `worktrees`.
+  D9 pins what "linked worktree" means (target directly under a `worktrees`
+  directory), one frozen test asserts both halves in one node so it is red on
+  main and at `e9a65a0`, the ticket gains the command and D9, the cap goes
+  80 → 90, `approve --rebaseline` (baseline 4 → 5), and the agent redoes the
+  work from the amended contract per [[fix-the-contract-not-the-branch]].
+
 Deferred from the grill, all cheap to reverse:
 
 - The refusal's exact wording — tests pin the worktree path, not the sentence.
@@ -312,6 +322,16 @@ decisions:
       - .edad/specs/pytest-bump-and-image-guard.md
     seam: the operator's shell after the release
     rejected: folding the version bump into the agent ticket — mixes a release with a feature and puts the version in agent scope
+  - id: D9
+    decision: for D2's condition, a linked worktree is a tree whose .git is a file whose `gitdir:` target lies directly under a directory named `worktrees`; a submodule checkout (`gitdir:` under `modules`) is a main checkout and judging it from inside stays allowed — a file read, still no git
+    verify:
+      - python3 -m pytest tests/test_gate_judge.py::test_a_linked_worktree_is_refused_but_a_submodule_checkout_is_not -q
+    frozen:
+      - tests/test_gate_judge.py
+    scope:
+      - edad/gate.py
+    seam: evaluate on a temp repository, judge location faked
+    rejected: git rev-parse --git-dir vs --git-common-dir — a git call before the toolchain check, and the T021/T023 fakes of gate.git answer a constant for every verb; noting it and moving on — a pinned condition known to be wrong is a contract defect
 deferred:
   - the refusal's exact wording (tests pin the worktree path, not the sentence)
   - the frozen file's name (tests/test_gate_judge.py assumed)

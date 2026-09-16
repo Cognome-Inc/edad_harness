@@ -1,11 +1,12 @@
 {
-  "tests/test_gate_judge.py": "7101de647e03f35f9b6e05c26a2e064a16516e4950b5ccb93255af2f2d7ebf83",
+  "tests/test_gate_judge.py": "c8041baef2fed35ffd0789b0be45c7c5f77bfde40a3e9d7dee5aab927d745b30",
   "_edad": {
-    "approved_at": "2026-09-16T16:05:11.980243+00:00",
-    "ticket_sha256": "41bc3f330b6626677335cc0036148ba80e0984b82f1503afd91675c73aea4564",
+    "approved_at": "2026-09-16T16:30:46.582953+00:00",
+    "ticket_sha256": "a29d224b0d5fe7120d485bef52f1acb1b15fba28d439d2a0029ef2b77f54e8fe",
     "decisions": [
       "D2",
-      "D6"
+      "D6",
+      "D9"
     ],
     "red_proof": [
       {
@@ -30,6 +31,13 @@
         ]
       },
       {
+        "command": "python3 -m pytest tests/test_gate_judge.py::test_a_linked_worktree_is_refused_but_a_submodule_checkout_is_not -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_judge.py::test_a_linked_worktree_is_refused_but_a_submodule_checkout_is_not"
+        ]
+      },
+      {
         "command": "python3 -m pytest tests/test_gate_judge.py::test_quickstart_says_which_copy_judges_and_why_a_worktree_run_is_refused -q",
         "exit_code": 1,
         "detected_by": [
@@ -39,8 +47,8 @@
     ],
     "mutation_proof": null,
     "full_gate_baseline": {
-      "taken_at": "2026-09-16T16:05:09.520877+00:00",
-      "commit": "07b3df0ec4eede8a5e016186e30dd74d9ca016b1",
+      "taken_at": "2026-09-16T16:30:43.510741+00:00",
+      "commit": "bcc5abbc6efd9e053de46216fb0dbcfbd60bad6f",
       "commands": {
         "python3 -m pytest -q": {
           "exit_code": 1,
@@ -48,6 +56,7 @@
             "pytest:tests/test_gate_judge.py::test_a_gate_judging_its_own_worktree_copy_is_refused_naming_the_tree": 1,
             "pytest:tests/test_gate_judge.py::test_the_cli_run_from_inside_a_worktree_is_refused_with_no_traceback": 1,
             "pytest:tests/test_gate_judge.py::test_the_self_judge_refusal_precedes_the_base_ref_probe_and_the_toolchain_check": 1,
+            "pytest:tests/test_gate_judge.py::test_a_linked_worktree_is_refused_but_a_submodule_checkout_is_not": 1,
             "pytest:tests/test_gate_judge.py::test_quickstart_says_which_copy_judges_and_why_a_worktree_run_is_refused": 1
           }
         },
@@ -59,8 +68,8 @@
     },
     "harness": {
       "version": null,
-      "commit": "07b3df0ec4eede8a5e016186e30dd74d9ca016b1",
-      "dirty": false,
+      "commit": "bcc5abbc6efd9e053de46216fb0dbcfbd60bad6f",
+      "dirty": true,
       "source": "checkout"
     },
     "toolchain": {

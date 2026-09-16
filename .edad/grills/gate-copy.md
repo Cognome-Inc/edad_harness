@@ -152,6 +152,28 @@ cap (80 suggested: a guard of a few lines, two docstring paragraphs, one QUICKST
 section); whether the spawn test copies `edad/` with `shutil.copytree(...,
 ignore=ignore_patterns("__pycache__"))` or via `git archive` of the checkout.
 
+**D9 — What "linked worktree" means (amendment 2026-09-16, after night 1).**
+Review of night 1 (`e9a65a0`, tag `t027-night-1`) found that D2's
+`(root / ".git").is_file()` also matches a git submodule's checkout — its `.git`
+is a `gitdir:` file too — so a harness vendored as a submodule and judging itself
+from inside would be refused as a linked worktree, though that is the allowed
+main-checkout case. Measured: a linked worktree's file reads `gitdir:
+<common>/.git/worktrees/<name>`; a submodule's reads `gitdir: ../.git/modules/<path>`.
+Not reachable today (the harness is a plain clone; ai-sniffer's root is not the
+harness's), and wrong-but-loud — but a pinned condition known to be wrong is a
+contract defect, so it is amended, not left. The rule: a tree is a linked worktree
+when its `.git` is a file whose `gitdir:` target lies directly under a directory
+named `worktrees`; a submodule checkout is a main checkout and stays allowed; a
+worktree *of* a submodule (`…/modules/x/worktrees/y`) is still refused. A file read,
+still no git call, so D2's ordering holds. One frozen test asserting both halves in
+one node — red on main (the worktree is not refused) and red at `e9a65a0` (the
+submodule is refused) — so it is an acceptance command with a real red proof.
+Node id: `tests/test_gate_judge.py::test_a_linked_worktree_is_refused_but_a_submodule_checkout_is_not`.
+Scope: `edad/gate.py`. Diff cap raised 80 → 90 for the file read.
+Rejected: `git rev-parse --git-dir` vs `--git-common-dir` — a git call ahead of the
+toolchain check, and T021/T023's fakes of `gate.git` answer a constant for every
+verb. Rejected: note it and move on — the user chose to fix it properly.
+
 **Sequencing.** Next: `/to-spec` → `/to-tickets` (T027) → approve → docker night →
 PR → merge → D8's release PR → tag `v0.1.1`. Blocked by nothing: T026 is on main.
 
@@ -226,6 +248,15 @@ decisions:
       - tests/test_packaging.py
       - .edad/specs/pytest-bump-and-image-guard.md
     rejected: folding the version bump into the agent ticket — mixes a release with a feature and puts the version in agent scope
+  - id: D9
+    decision: for D2's condition, a linked worktree is a tree whose .git is a file whose `gitdir:` target lies directly under a directory named `worktrees`; a submodule checkout (`gitdir:` under `modules`) is a main checkout and judging it from inside stays allowed — a file read, still no git
+    verify:
+      - python3 -m pytest tests/test_gate_judge.py::test_a_linked_worktree_is_refused_but_a_submodule_checkout_is_not -q
+    frozen:
+      - tests/test_gate_judge.py
+    scope:
+      - edad/gate.py
+    rejected: git rev-parse --git-dir vs --git-common-dir — a git call before the toolchain check, and the T021/T023 fakes of gate.git answer a constant for every verb; noting it and moving on — a pinned condition known to be wrong is a contract defect
 deferred:
   - the refusal's exact wording (tests pin the worktree path, not the sentence)
   - the frozen file's name (tests/test_gate_judge.py assumed)
