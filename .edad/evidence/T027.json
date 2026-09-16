@@ -1,0 +1,97 @@
+{
+  "ticket": "T027",
+  "started_at": "2026-09-16T16:39:03.767760+00:00",
+  "commit": "c4f784484826c42ff59e8bc216a41f75ac6d4028",
+  "base_ref": "f888cd53abb7fc7292d3d9d97b5b53ea99efef04",
+  "gate": "full_gate",
+  "freeze_ok": true,
+  "commands_ok": true,
+  "scope_violations": [],
+  "scope_enforced": true,
+  "violations": [],
+  "changed_files": [
+    "QUICKSTART.md",
+    "edad/gate.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest -q",
+      "exit_code": 0,
+      "duration_s": 31.24,
+      "output_tail": "........................................................................ [ 23%]\n........................................................................ [ 47%]\n........................................................................ [ 71%]\n........................................................................ [ 95%]\n.............                                                            [100%]\n301 passed in 30.97s\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "duration_s": 0.06,
+      "output_tail": "All checks passed!\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    }
+  ],
+  "decisions": [
+    "D2",
+    "D6",
+    "D9"
+  ],
+  "red_proof": [
+    {
+      "command": "python3 -m pytest tests/test_gate_judge.py::test_a_gate_judging_its_own_worktree_copy_is_refused_naming_the_tree -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_judge.py::test_a_gate_judging_its_own_worktree_copy_is_refused_naming_the_tree"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_judge.py::test_the_cli_run_from_inside_a_worktree_is_refused_with_no_traceback -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_judge.py::test_the_cli_run_from_inside_a_worktree_is_refused_with_no_traceback"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_judge.py::test_the_self_judge_refusal_precedes_the_base_ref_probe_and_the_toolchain_check -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_judge.py::test_the_self_judge_refusal_precedes_the_base_ref_probe_and_the_toolchain_check"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_judge.py::test_a_linked_worktree_is_refused_but_a_submodule_checkout_is_not -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_judge.py::test_a_linked_worktree_is_refused_but_a_submodule_checkout_is_not"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_judge.py::test_quickstart_says_which_copy_judges_and_why_a_worktree_run_is_refused -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_judge.py::test_quickstart_says_which_copy_judges_and_why_a_worktree_run_is_refused"
+      ]
+    }
+  ],
+  "mutation_proof": null,
+  "approved": true,
+  "ticket_verified": true,
+  "baseline_commit": null,
+  "new_failures": {},
+  "uncomparable_failures": [],
+  "harness": {
+    "version": null,
+    "commit": "f888cd53abb7fc7292d3d9d97b5b53ea99efef04",
+    "dirty": false,
+    "source": "checkout"
+  },
+  "toolchain": {
+    "pytest": "9.0.3",
+    "ruff": "0.15.18",
+    "PyYAML": "6.0.2"
+  },
+  "passed": true,
+  "passed_modulo_baseline": false
+}

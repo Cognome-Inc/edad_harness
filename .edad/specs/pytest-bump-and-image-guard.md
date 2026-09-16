@@ -216,6 +216,19 @@ meaningful run right after the first post-bump night.
   agent redoes the work. The spec said "dry-run a night" without saying which
   driver can - the same gap as D11, one step over.
 
+- Amendment 2026-09-16, at the release step (D10). `v0.1.0` had never been
+  published: the tag existed only on one machine, origin carried no tags, no
+  GitHub release existed, and every record and lock so far says `source:
+  checkout, version: null`. The operator chose to publish this release as
+  `v0.1.0` rather than bump to `v0.1.1` — a version nobody has installed has no
+  users to protect, and a bump would also have had to edit T018's frozen
+  `tests/test_packaging.py`, which pins the literal `0.1.0` (the Releasing
+  section does not mention that; it should the next time a real bump happens).
+  So D10's verify one-liner is superseded: the version string stays `0.1.0`, no
+  release commit was needed, and the release is the tag `v0.1.0` on PR #8's
+  merge commit `fe2ec5a` — the first commit on main with the guard (T024), the
+  pin (PR #1) and the first records made under it (T026) all present.
+
 Deferred from the grill, all cheap to reverse:
 
 - Exact refusal prose beyond the pinned substrings.

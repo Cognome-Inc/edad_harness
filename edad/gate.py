@@ -1825,12 +1825,64 @@ def die_on_bad_base_ref(root: Path, base_ref: str | None) -> None:
         )
 
 
+def is_linked_worktree(root: Path) -> bool:
+    """Whether `root` is a linked worktree - `git worktree add`'s checkout -
+    rather than a main checkout or a submodule's own checkout.
+
+    A linked worktree and a submodule checkout both have a `.git` FILE, not a
+    directory, so `is_file()` alone cannot tell them apart. The `gitdir:` line
+    inside it does: `git worktree add` points it at
+    `<repo>/.git/worktrees/<name>`, while a submodule's points at
+    `<repo>/.git/modules/<path>` - and that checkout IS the submodule's own
+    main checkout, not a copy grading itself. Only the parent directory's name
+    is read; the target need not resolve or even exist.
+    """
+    git_path = root / ".git"
+    if not git_path.is_file():
+        return False
+    m = re.match(r"gitdir:\s*(.+)", git_path.read_text().strip())
+    if not m:
+        return False
+    return Path(m.group(1).strip()).parent.name == "worktrees"
+
+
+def die_on_self_judged_worktree(root: Path) -> None:
+    """Refuse to let a linked worktree's copy of the gate judge that same
+    worktree - the subject grading itself.
+
+    `harness_checkout()` is the JUDGE: the repository the module running this
+    check was imported from. When that is the very tree being judged, AND that
+    tree is a linked worktree (not the main checkout, where judge and subject
+    are the same repository by design), the verdict cannot be trusted - a
+    ticket can edit `edad/gate.py` in its own worktree and the run that grades
+    it would be reading the edited copy. Needs no git and no measurement, only
+    a path comparison and a file read, so it runs before anything else in
+    `evaluate`.
+    """
+    judge = harness_checkout()
+    if judge is not None and judge == root.resolve() and is_linked_worktree(root):
+        die(
+            f"refusing to judge {root} with its own copy of the gate: this "
+            f"tree is a linked worktree, and the gate module running this "
+            f"check was imported from inside it - the subject would be "
+            f"grading itself. Judge it from the main checkout instead."
+        )
+
+
 def evaluate(
     root: Path, ticket: dict, gate_name: str = "acceptance", base_ref: str | None = None
 ) -> Record:
     """Run the three checks and return a Record. The single entry point for
     anything that needs a verdict — the CLI and the session controller both
-    call this, so they cannot drift apart."""
+    call this, so they cannot drift apart.
+
+    Before any of that: refuse if the gate module running this check was
+    imported from inside `root` and `root` is a linked worktree - the subject
+    would be grading itself with its own copy. See
+    `die_on_self_judged_worktree`.
+    """
+    die_on_self_judged_worktree(root)
+
     kills = ticket.get("kill_conditions") or {}
     commands = ticket.get(gate_name) or []
     if not commands:

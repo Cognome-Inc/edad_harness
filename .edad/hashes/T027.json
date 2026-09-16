@@ -1,0 +1,81 @@
+{
+  "tests/test_gate_judge.py": "c8041baef2fed35ffd0789b0be45c7c5f77bfde40a3e9d7dee5aab927d745b30",
+  "_edad": {
+    "approved_at": "2026-09-16T16:37:20.722358+00:00",
+    "ticket_sha256": "90d3d54c4d46cb3f701e838c75ac98e659c699e1bc34c3097af21fd9ed9d62dd",
+    "decisions": [
+      "D2",
+      "D6",
+      "D9"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_gate_judge.py::test_a_gate_judging_its_own_worktree_copy_is_refused_naming_the_tree -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_judge.py::test_a_gate_judging_its_own_worktree_copy_is_refused_naming_the_tree"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_judge.py::test_the_cli_run_from_inside_a_worktree_is_refused_with_no_traceback -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_judge.py::test_the_cli_run_from_inside_a_worktree_is_refused_with_no_traceback"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_judge.py::test_the_self_judge_refusal_precedes_the_base_ref_probe_and_the_toolchain_check -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_judge.py::test_the_self_judge_refusal_precedes_the_base_ref_probe_and_the_toolchain_check"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_judge.py::test_a_linked_worktree_is_refused_but_a_submodule_checkout_is_not -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_judge.py::test_a_linked_worktree_is_refused_but_a_submodule_checkout_is_not"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_judge.py::test_quickstart_says_which_copy_judges_and_why_a_worktree_run_is_refused -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_judge.py::test_quickstart_says_which_copy_judges_and_why_a_worktree_run_is_refused"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-09-16T16:37:17.105049+00:00",
+      "commit": "b7158794e8dafe3a6fe0b9d75e78f0288df3be68",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_gate_judge.py::test_a_gate_judging_its_own_worktree_copy_is_refused_naming_the_tree": 1,
+            "pytest:tests/test_gate_judge.py::test_the_cli_run_from_inside_a_worktree_is_refused_with_no_traceback": 1,
+            "pytest:tests/test_gate_judge.py::test_the_self_judge_refusal_precedes_the_base_ref_probe_and_the_toolchain_check": 1,
+            "pytest:tests/test_gate_judge.py::test_a_linked_worktree_is_refused_but_a_submodule_checkout_is_not": 1,
+            "pytest:tests/test_gate_judge.py::test_quickstart_says_which_copy_judges_and_why_a_worktree_run_is_refused": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "b7158794e8dafe3a6fe0b9d75e78f0288df3be68",
+      "dirty": true,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "9.0.3",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2"
+    }
+  }
+}
