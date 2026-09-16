@@ -1,8 +1,8 @@
 {
   "tests/test_gate_judge.py": "c8041baef2fed35ffd0789b0be45c7c5f77bfde40a3e9d7dee5aab927d745b30",
   "_edad": {
-    "approved_at": "2026-09-16T16:30:46.582953+00:00",
-    "ticket_sha256": "a29d224b0d5fe7120d485bef52f1acb1b15fba28d439d2a0029ef2b77f54e8fe",
+    "approved_at": "2026-09-16T16:37:20.722358+00:00",
+    "ticket_sha256": "90d3d54c4d46cb3f701e838c75ac98e659c699e1bc34c3097af21fd9ed9d62dd",
     "decisions": [
       "D2",
       "D6",
@@ -47,8 +47,8 @@
     ],
     "mutation_proof": null,
     "full_gate_baseline": {
-      "taken_at": "2026-09-16T16:30:43.510741+00:00",
-      "commit": "bcc5abbc6efd9e053de46216fb0dbcfbd60bad6f",
+      "taken_at": "2026-09-16T16:37:17.105049+00:00",
+      "commit": "b7158794e8dafe3a6fe0b9d75e78f0288df3be68",
       "commands": {
         "python3 -m pytest -q": {
           "exit_code": 1,
@@ -68,7 +68,7 @@
     },
     "harness": {
       "version": null,
-      "commit": "bcc5abbc6efd9e053de46216fb0dbcfbd60bad6f",
+      "commit": "b7158794e8dafe3a6fe0b9d75e78f0288df3be68",
       "dirty": true,
       "source": "checkout"
     },
