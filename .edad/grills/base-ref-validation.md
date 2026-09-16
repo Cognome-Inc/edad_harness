@@ -136,6 +136,22 @@ on the grill's prototype:
   the child - the first test in the suite to spawn `edad.gate`; the queue tests only
   assert an argv.
 
+**Amendment, 2026-09-16 (PR #8 review, after the first night passed at
+`93de4b9`, tagged `t026-night-1`).** The probe as D2/D3 wrote it, `git merge-base
+<ref> HEAD`, hands the ref to git positionally, so a ref that begins with `-` is
+parsed as a merge-base option. Verified on git 2.50.1: `git merge-base --octopus
+HEAD` exits 0, so `--base-ref=--octopus` (argparse accepts the `=` form) sails
+through the probe and reproduces the pre-ticket symptom exactly - the false
+"approval lock modified since --octopus" verdict, then `git diff --name-only
+--octopus...HEAD` exiting 129 as a bare traceback. Operator-typo territory, but the
+same class of failure the ticket exists to close, so it is a decision, not a nit:
+**D9** - the probe ends git's option parsing before the ref with `--end-of-options`
+(`git merge-base --end-of-options --octopus HEAD` exits 128, as does `--`). One
+frozen test added, red at base and red at `93de4b9` with the reported
+`CalledProcessError`, green with the one-token change; the existing eight only pin
+`args[0] == "merge-base"`, so they are untouched. The branch is re-approved with
+the widened baseline and the agent redoes the work.
+
 ## Decisions
 
 ```yaml
@@ -210,6 +226,15 @@ decisions:
     scope:
       - edad/gate.py
     rejected: resolve base_ref to a SHA in the record — record-format change with readers behind it; allow_abbrev=False — breaks --base for the operator and scripts
+  - id: D9
+    decision: the probe is `git merge-base --end-of-options <ref> HEAD`, so a ref that begins with `-` (e.g. `--octopus`, which merge-base would otherwise accept as a flag and exit 0) fails at the probe and is refused by name like any other bad ref, before any diff or lock comparison
+    verify:
+      - python3 -m pytest tests/test_gate_base_ref.py::test_a_ref_that_git_would_read_as_an_option_is_refused_naming_the_ref -q
+    frozen:
+      - tests/test_gate_base_ref.py
+    scope:
+      - edad/gate.py
+    rejected: rejecting refs that start with `-` in cmd_run — evaluate stays crashable for other callers, the same shape D1 rejected; `--` instead of `--end-of-options` — works too, but `--end-of-options` is the form git documents for revisions
 deferred:
   - exact refusal wording, and whether it is one message or two split on git's exit code (128 bad name / 1 no merge base)
   - whether the base_ref=None guard pins the verb `merge-base` through a gate.git recorder (acceptable — D2 names it)

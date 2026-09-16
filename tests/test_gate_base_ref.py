@@ -280,6 +280,27 @@ def test_the_cli_exits_2_with_the_refusal_on_stderr_and_no_traceback(repo):
     assert "Traceback" not in proc.stderr + proc.stdout, proc.stderr[-800:]
 
 
+# --- D9: a ref that reads as an option ----------------------------------------
+
+
+def test_a_ref_that_git_would_read_as_an_option_is_refused_naming_the_ref(repo, monkeypatch):
+    """`--octopus` is a merge-base flag, and `git merge-base --octopus HEAD`
+    exits 0. A probe that hands the ref to git positionally lets it through,
+    and the operator gets the pre-ticket symptom back: the false lock-drift
+    verdict, then `git diff --octopus...HEAD` as a bare traceback. Reachable
+    from the CLI as `--base-ref=--octopus`. The probe must end git's option
+    parsing before the ref (`--end-of-options`), so that a ref like this fails
+    at the probe and is refused by name like any other bad ref - before any
+    diff or lock comparison runs."""
+    log = GitLog(monkeypatch)
+
+    reason = repo.refusal("--octopus")
+
+    assert "--octopus" in reason, reason
+    assert LOCK_DRIFT not in reason, reason
+    assert "diff" not in log.verbs and "show" not in log.verbs, log.verbs
+
+
 # --- D6: what must not change ---------------------------------------------------
 
 
