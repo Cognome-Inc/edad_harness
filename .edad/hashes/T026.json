@@ -1,15 +1,16 @@
 {
-  "tests/test_gate_base_ref.py": "c48f13791aea693b10d9f47eff92dbb174402487b6d959799ddfe3e9c30759e8",
+  "tests/test_gate_base_ref.py": "4def46d1e9b72fd4f3c32e0c685fabee68c1f7fec00337f56b6acd6c5bd2c916",
   "_edad": {
-    "approved_at": "2026-09-16T13:23:52.056562+00:00",
-    "ticket_sha256": "92349624f8d956cc20fcaf6a43bec9df6abddc61552989e67e5111edd7ef274c",
+    "approved_at": "2026-09-16T13:36:15.990485+00:00",
+    "ticket_sha256": "d8fe1f8f15d24dff8196abaa2ea27824bf9d8be9ff18b368a94117bc64f4c20d",
     "decisions": [
       "D1",
       "D2",
       "D3",
       "D4",
       "D5",
-      "D6"
+      "D6",
+      "D9"
     ],
     "red_proof": [
       {
@@ -67,12 +68,19 @@
         "detected_by": [
           "tests/test_gate_base_ref.py::test_the_probe_runs_for_an_ancestor_ref_and_not_for_none"
         ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_base_ref.py::test_a_ref_that_git_would_read_as_an_option_is_refused_naming_the_ref -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_base_ref.py::test_a_ref_that_git_would_read_as_an_option_is_refused_naming_the_ref"
+        ]
       }
     ],
     "mutation_proof": null,
     "full_gate_baseline": {
-      "taken_at": "2026-09-16T13:23:45.340187+00:00",
-      "commit": "dfc009ea8395994de3d40d71981283f4299745bc",
+      "taken_at": "2026-09-16T13:36:08.777281+00:00",
+      "commit": "124c8306b3caa081d2c34ba915b02489e977e51d",
       "commands": {
         "python3 -m pytest -q": {
           "exit_code": 1,
@@ -84,6 +92,7 @@
             "pytest:tests/test_gate_base_ref.py::test_a_bad_ref_with_a_mismatched_toolchain_is_refused_for_the_ref": 1,
             "pytest:tests/test_gate_base_ref.py::test_the_refusal_is_a_refusal_naming_the_ref_not_a_lock_drift_verdict": 1,
             "pytest:tests/test_gate_base_ref.py::test_the_cli_exits_2_with_the_refusal_on_stderr_and_no_traceback": 1,
+            "pytest:tests/test_gate_base_ref.py::test_a_ref_that_git_would_read_as_an_option_is_refused_naming_the_ref": 1,
             "pytest:tests/test_gate_base_ref.py::test_the_probe_runs_for_an_ancestor_ref_and_not_for_none": 1
           }
         },
@@ -95,7 +104,7 @@
     },
     "harness": {
       "version": null,
-      "commit": "dfc009ea8395994de3d40d71981283f4299745bc",
+      "commit": "124c8306b3caa081d2c34ba915b02489e977e51d",
       "dirty": false,
       "source": "checkout"
     },
