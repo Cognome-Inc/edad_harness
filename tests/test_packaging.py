@@ -42,7 +42,7 @@ def test_build_system_is_setuptools():
 def test_project_metadata_names_the_distribution():
     project = pyproject().get("project", {})
     assert project.get("name") == "edad-harness"
-    assert project.get("version") == "0.1.0"
+    assert project.get("version") == "0.1.1"
     assert project.get("requires-python") == ">=3.12"
     # D3: no console script. Absence is green at base, so it lives inside this
     # test, which is red at base because [project] does not exist.
