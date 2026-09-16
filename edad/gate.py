@@ -1801,6 +1801,30 @@ def cmd_approve(args) -> int:
     return 0
 
 
+def die_on_bad_base_ref(root: Path, base_ref: str | None) -> None:
+    """Refuse a base ref git cannot find a merge base for against HEAD, before
+    anything downstream trusts it: the toolchain refusal asks whether pins
+    changed since it, the trusted-input check compares the lock at it, and
+    `changed_files` diffs against it - all three exit 128 inside a bare `git
+    diff`/`git show` for a ref that does not resolve or shares no history with
+    HEAD, and the trusted-input check reads that same error as a false "lock
+    modified" verdict before the crash even arrives.
+
+    `--end-of-options` stops git from parsing a ref such as `--octopus` as a
+    flag of `merge-base` itself; without it that ref reaches the diff as a
+    bare traceback instead of being refused by name here.
+    """
+    if base_ref is None:
+        return
+    try:
+        git(root, "merge-base", "--end-of-options", base_ref, "HEAD")
+    except subprocess.CalledProcessError:
+        die(
+            f"base ref {base_ref!r} does not resolve to a commit sharing "
+            f"history with HEAD"
+        )
+
+
 def evaluate(
     root: Path, ticket: dict, gate_name: str = "acceptance", base_ref: str | None = None
 ) -> Record:
@@ -1811,6 +1835,8 @@ def evaluate(
     commands = ticket.get(gate_name) or []
     if not commands:
         die(f"ticket declares no '{gate_name}' commands")
+
+    die_on_bad_base_ref(root, base_ref)
 
     measurements = measure_toolchain(root)
     die_on_toolchain_mismatch(
