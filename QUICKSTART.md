@@ -14,7 +14,7 @@ the agent changes — and keeps that repo's tickets, locks and evidence under
 Into the target repo's environment:
 
     pip install -r requirements-gate.txt      # the gate's pins, exact
-    pip install git+https://github.com/Cognome-Inc/edad_harness@v0.1.0   # the harness, pinned
+    pip install git+https://github.com/Cognome-Inc/edad_harness@v0.1.1   # the harness, pinned
 
 Developing the harness itself? Install your checkout editable instead, so
 edits are live: `pip install -e /path/to/edad_harness`.
@@ -152,9 +152,12 @@ version number.
 
 To cut one:
 
-1. In a single commit, bump `version` in `pyproject.toml` and the pinned
-   `pip install git+...@vX.Y.Z` line in this file's Install section to match.
-   The two must agree — a mismatch here is what the packaging tests catch.
+1. In a single commit, bump `version` in `pyproject.toml`, the pinned
+   `pip install git+...@vX.Y.Z` line in this file's Install section, and the
+   version literal `tests/test_packaging.py` asserts against `pyproject.toml`.
+   The three must agree — a mismatch here is what the packaging tests catch,
+   and that test is a frozen file from T018, so a bump edits it outside any
+   ticket, on purpose.
 2. Open a pull request with that commit and merge it.
 3. On the merge commit, `git tag vX.Y.Z` and `git push origin vX.Y.Z`. Placing
    and pushing the tag is an operator act; nothing in the gate does it for you.
