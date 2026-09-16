@@ -120,6 +120,29 @@ passes its full gate the controller promotes the record to
 ticket and pin floor against; `null` means the gate was run by hand with no
 base, so nothing was compared.
 
+## Which copy judges
+
+The harness develops itself, so every agent worktree carries a full copy of
+`edad/` — including `gate.py`, the module that judges it. Two copies are in
+play on every night. The judge is the copy the controller process imported:
+`python3 -m edad.session` runs with the main checkout as its working
+directory and imports `edad` once, so the judge stays the main checkout's
+copy for the whole session (the installed harness, for any other target). The
+subject is the worktree — the commands the gate runs there import their own
+copy, because the working directory wins on `sys.path`.
+
+The record names both, so you never have to guess which copy ran: `harness`
+(`harness.commit`) is the judge, `commit` is the subject's HEAD. In a queue
+night the judge is the run branch's tip at each child's spawn, so promoting a
+`gate.py` change partway through a queue changes which copy judges the
+tickets spawned after it.
+
+The one way the two copies collapse into each other is a hand-run from
+inside a worktree: `cd <worktree>; python3 -m edad.gate run T` would import
+the worktree's own `edad/gate.py` and use it to judge the worktree — the
+subject grading itself. The gate refuses that, naming the worktree, before it
+checks anything else. Judge from the main checkout instead.
+
 ## Releasing
 
 A release is one commit, merged by pull request, followed by a tag on the
