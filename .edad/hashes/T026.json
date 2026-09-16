@@ -1,0 +1,108 @@
+{
+  "tests/test_gate_base_ref.py": "c48f13791aea693b10d9f47eff92dbb174402487b6d959799ddfe3e9c30759e8",
+  "_edad": {
+    "approved_at": "2026-09-16T13:23:52.056562+00:00",
+    "ticket_sha256": "92349624f8d956cc20fcaf6a43bec9df6abddc61552989e67e5111edd7ef274c",
+    "decisions": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D5",
+      "D6"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_gate_base_ref.py::test_a_bad_base_ref_is_refused_before_anything_else_runs -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_base_ref.py::test_a_bad_base_ref_is_refused_before_anything_else_runs"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_base_ref.py::test_a_ref_that_does_not_resolve_is_refused_naming_the_ref -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_base_ref.py::test_a_ref_that_does_not_resolve_is_refused_naming_the_ref"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_base_ref.py::test_a_ref_with_no_shared_history_is_refused_naming_the_ref -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_base_ref.py::test_a_ref_with_no_shared_history_is_refused_naming_the_ref"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_base_ref.py::test_the_probe_reaches_git_through_the_gate_git_seam -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_base_ref.py::test_the_probe_reaches_git_through_the_gate_git_seam"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_base_ref.py::test_a_bad_ref_with_a_mismatched_toolchain_is_refused_for_the_ref -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_base_ref.py::test_a_bad_ref_with_a_mismatched_toolchain_is_refused_for_the_ref"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_base_ref.py::test_the_refusal_is_a_refusal_naming_the_ref_not_a_lock_drift_verdict -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_base_ref.py::test_the_refusal_is_a_refusal_naming_the_ref_not_a_lock_drift_verdict"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_base_ref.py::test_the_cli_exits_2_with_the_refusal_on_stderr_and_no_traceback -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_base_ref.py::test_the_cli_exits_2_with_the_refusal_on_stderr_and_no_traceback"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_base_ref.py::test_the_probe_runs_for_an_ancestor_ref_and_not_for_none -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_base_ref.py::test_the_probe_runs_for_an_ancestor_ref_and_not_for_none"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-09-16T13:23:45.340187+00:00",
+      "commit": "dfc009ea8395994de3d40d71981283f4299745bc",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_gate_base_ref.py::test_a_bad_base_ref_is_refused_before_anything_else_runs": 1,
+            "pytest:tests/test_gate_base_ref.py::test_a_ref_that_does_not_resolve_is_refused_naming_the_ref": 1,
+            "pytest:tests/test_gate_base_ref.py::test_a_ref_with_no_shared_history_is_refused_naming_the_ref": 1,
+            "pytest:tests/test_gate_base_ref.py::test_the_probe_reaches_git_through_the_gate_git_seam": 1,
+            "pytest:tests/test_gate_base_ref.py::test_a_bad_ref_with_a_mismatched_toolchain_is_refused_for_the_ref": 1,
+            "pytest:tests/test_gate_base_ref.py::test_the_refusal_is_a_refusal_naming_the_ref_not_a_lock_drift_verdict": 1,
+            "pytest:tests/test_gate_base_ref.py::test_the_cli_exits_2_with_the_refusal_on_stderr_and_no_traceback": 1,
+            "pytest:tests/test_gate_base_ref.py::test_the_probe_runs_for_an_ancestor_ref_and_not_for_none": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "dfc009ea8395994de3d40d71981283f4299745bc",
+      "dirty": false,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "9.0.3",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2"
+    }
+  }
+}
