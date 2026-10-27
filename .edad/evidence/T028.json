@@ -1,0 +1,76 @@
+{
+  "ticket": "T028",
+  "started_at": "2026-10-27T19:35:59.024866+00:00",
+  "commit": "3f87fe9eb5d42656a877113e845d55d56444aef3",
+  "base_ref": "d83c1f74eb5c355c16f589d5c2f6eef5c40c2f89",
+  "gate": "full_gate",
+  "freeze_ok": true,
+  "commands_ok": true,
+  "scope_violations": [],
+  "scope_enforced": true,
+  "violations": [],
+  "changed_files": [
+    "edad/gate.py",
+    "requirements-gate.txt"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest -q",
+      "exit_code": 0,
+      "duration_s": 34.96,
+      "output_tail": "........................................................................ [ 23%]\n........................................................................ [ 47%]\n........................................................................ [ 71%]\n........................................................................ [ 95%]\n...............                                                          [100%]\n303 passed in 34.25s\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "duration_s": 5.4,
+      "output_tail": "All checks passed!\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    }
+  ],
+  "decisions": [
+    "D8"
+  ],
+  "red_proof": [
+    {
+      "command": "python3 -m pytest tests/test_gate_toolchain.py::test_bandit_is_pinned_and_measured_with_the_toolchain -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_toolchain.py::test_bandit_is_pinned_and_measured_with_the_toolchain"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_gate_toolchain.py::test_mutmut_is_pinned_and_measured_with_the_toolchain -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_gate_toolchain.py::test_mutmut_is_pinned_and_measured_with_the_toolchain"
+      ]
+    }
+  ],
+  "mutation_proof": null,
+  "approved": true,
+  "ticket_verified": true,
+  "baseline_commit": null,
+  "new_failures": {},
+  "uncomparable_failures": [],
+  "harness": {
+    "version": null,
+    "commit": "d83c1f74eb5c355c16f589d5c2f6eef5c40c2f89",
+    "dirty": false,
+    "source": "checkout"
+  },
+  "toolchain": {
+    "pytest": "9.0.3",
+    "ruff": "0.15.18",
+    "PyYAML": "6.0.2",
+    "bandit": "1.9.4",
+    "mutmut": "3.8.0"
+  },
+  "passed": true,
+  "passed_modulo_baseline": false
+}
