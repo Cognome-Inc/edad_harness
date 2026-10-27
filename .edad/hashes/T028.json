@@ -1,0 +1,55 @@
+{
+  "tests/test_gate_toolchain.py": "442c621248853a52794da571b9a5c3d3ac761316451324f4b21a3b232af3f544",
+  "_edad": {
+    "approved_at": "2026-10-27T19:19:27.459492+00:00",
+    "ticket_sha256": "a8d79a60289cd422405779f05c7b1aab6a2c6c2463a138db60e9ffe4986c7a75",
+    "decisions": [
+      "D8"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_gate_toolchain.py::test_bandit_is_pinned_and_measured_with_the_toolchain -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_toolchain.py::test_bandit_is_pinned_and_measured_with_the_toolchain"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_toolchain.py::test_mutmut_is_pinned_and_measured_with_the_toolchain -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_toolchain.py::test_mutmut_is_pinned_and_measured_with_the_toolchain"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-10-27T19:19:21.378397+00:00",
+      "commit": "d97eab12622eeba61edbce2d9428ce320ea19886",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_gate_toolchain.py::test_bandit_is_pinned_and_measured_with_the_toolchain": 1,
+            "pytest:tests/test_gate_toolchain.py::test_mutmut_is_pinned_and_measured_with_the_toolchain": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "d97eab12622eeba61edbce2d9428ce320ea19886",
+      "dirty": false,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "9.0.3",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2"
+    }
+  }
+}

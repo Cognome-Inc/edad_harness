@@ -641,9 +641,17 @@ def new_failure_keys(
 # it. Reporting that as "not installed" points at the wrong cause and refuses
 # every approve and every session. A pure library with no CLI has no entry
 # here: metadata is the only way to see it, and its absence really is missing.
+# bandit and mutmut are CLIs the review panel shells out to, so they have one.
+# mutmut loads its config at import, even for --version, and exits 1 unless the
+# cwd has a src/ or lib/ to guess from, so its probe runs in a scratch dir.
 VERSION_PROBES = {
     "pytest": "python3 -m pytest --version",
     "ruff": "ruff --version",
+    "bandit": "bandit --version",
+    "mutmut": (
+        'd=$(mktemp -d) && mkdir "$d/src" && '
+        '(cd "$d" && mutmut --version); rc=$?; rm -rf "$d"; exit $rc'
+    ),
 }
 _VERSION_RE = re.compile(r"\b(\d+(?:\.\d+)+)\b")
 
