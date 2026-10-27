@@ -7,3 +7,5 @@
 pytest==9.0.3
 ruff==0.15.18
 PyYAML==6.0.2
+bandit==1.9.4
+mutmut==3.8.0
