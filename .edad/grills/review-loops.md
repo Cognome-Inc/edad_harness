@@ -77,7 +77,7 @@ and the tests (no resume/continue of any session). The writer revises and
 re-submits up to the round cap.
 Rejected: a fresh writer agent too — loses the discussion context behind the
 spec and guesses more; the bias concern is the reviewer's, which stays fresh.
-Verify: `python3 -m pytest tests/test_test_review.py::test_reviewer_runs_as_a_new_claude_process_given_only_the_spec_and_tests -q`
+Verify: `python3 -m pytest tests/test_test_review.py::test_reviewer_runs_as_a_new_claude_process_given_only_the_spec_and_tests tests/test_test_review.py::test_reviewer_prompt_holds_the_spec_tests_and_rubric_and_nothing_else -q`
 
 **D6 — v1 panel is code + security reviewers, in parallel fresh sessions.**
 The panel is built so reviewers can be added; UX and UI-design reviewers are
@@ -447,7 +447,7 @@ decisions:
   - id: D5
     decision: the ticket-making session writes tests; the reviewer is always a new `claude -p` process given only the spec and tests, never a resumed session
     verify:
-      - python3 -m pytest tests/test_test_review.py::test_reviewer_runs_as_a_new_claude_process_given_only_the_spec_and_tests -q
+      - python3 -m pytest tests/test_test_review.py::test_reviewer_runs_as_a_new_claude_process_given_only_the_spec_and_tests tests/test_test_review.py::test_reviewer_prompt_holds_the_spec_tests_and_rubric_and_nothing_else -q
     frozen:
       - tests/test_test_review.py
     scope:
