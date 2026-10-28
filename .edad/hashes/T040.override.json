@@ -1,0 +1,9 @@
+{
+  "approved_by": "130494653+cnelapatla@users.noreply.github.com",
+  "reason": "bootstrap: the reviewer is isolated by this ticket; hand review R1\u2013R3, all majors fixed",
+  "approved_at": "2026-10-28T17:57:56.495192+00:00",
+  "frozen": {
+    "tests/test_review_isolation.py": "4e6f5a3d155eb3f2f941c8c677c0d14377bc297f12e89ec273d7458de2bde8bd",
+    "live_tests/test_reviewer_isolation.py": "22aced31b5b62667f5863cf598bf6a836e273d27d5efdd22f132b9edc2efec3d"
+  }
+}
