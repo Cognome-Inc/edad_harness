@@ -1,0 +1,131 @@
+{
+  "tests/test_test_review.py": "f0a886a7c692aab75152e671bc51ae3119190f2b7b64e47a7f21ed981606eb71",
+  "_edad": {
+    "approved_at": "2026-10-28T16:24:18.341918+00:00",
+    "ticket_sha256": "9c13a6c1f5ebf0b8cb20f267654865d434a3e0d6140f7b059d50d629a33ab718",
+    "decisions": [
+      "D1",
+      "D9",
+      "D27"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_review_stops_after_three_rounds_and_leaves_ticket_unlocked -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_review_stops_after_three_rounds_and_leaves_ticket_unlocked"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_review_passes_with_only_nits_left -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_review_passes_with_only_nits_left"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_a_disputed_finding_and_its_reason_reach_the_next_reviewer -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_a_disputed_finding_and_its_reason_reach_the_next_reviewer"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_malformed_reviewer_output_counts_as_a_failed_round -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_malformed_reviewer_output_counts_as_a_failed_round"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_review_record_is_written_beside_the_lock -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_review_record_is_written_beside_the_lock"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_each_invocation_runs_one_round_and_a_fourth_is_refused -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_each_invocation_runs_one_round_and_a_fourth_is_refused"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_round_counter_resets_only_when_criteria_are_reapproved -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_round_counter_resets_only_when_criteria_are_reapproved"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_a_dispute_that_names_no_finding_of_the_last_round_is_refused -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_a_dispute_that_names_no_finding_of_the_last_round_is_refused"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_the_reviewer_is_given_the_spec_every_frozen_file_and_the_tests_rubric_and_no_tools -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_the_reviewer_is_given_the_spec_every_frozen_file_and_the_tests_rubric_and_no_tools"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_a_passing_round_runs_gate_approve_in_the_repo -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_a_passing_round_runs_gate_approve_in_the_repo"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_a_reviewer_that_fails_to_run_uses_up_no_round -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_a_reviewer_that_fails_to_run_uses_up_no_round"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-10-28T16:24:14.360627+00:00",
+      "commit": "2e2f529c5d2e6eb7cd74f27205c33a29cd75dc71",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_test_review.py::test_review_passes_with_only_nits_left": 1,
+            "pytest:tests/test_test_review.py::test_a_disputed_finding_and_its_reason_reach_the_next_reviewer": 1,
+            "pytest:tests/test_test_review.py::test_a_dispute_that_names_no_finding_of_the_last_round_is_refused": 1,
+            "pytest:tests/test_test_review.py::test_malformed_reviewer_output_counts_as_a_failed_round": 1,
+            "pytest:tests/test_test_review.py::test_review_record_is_written_beside_the_lock": 1,
+            "pytest:tests/test_test_review.py::test_each_invocation_runs_one_round_and_a_fourth_is_refused": 1,
+            "pytest:tests/test_test_review.py::test_round_counter_resets_only_when_criteria_are_reapproved": 1,
+            "pytest:tests/test_test_review.py::test_review_stops_after_three_rounds_and_leaves_ticket_unlocked": 1,
+            "pytest:tests/test_test_review.py::test_the_reviewer_is_given_the_spec_every_frozen_file_and_the_tests_rubric_and_no_tools": 1,
+            "pytest:tests/test_test_review.py::test_a_passing_round_runs_gate_approve_in_the_repo": 1,
+            "pytest:tests/test_test_review.py::test_a_reviewer_that_fails_to_run_uses_up_no_round": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "2e2f529c5d2e6eb7cd74f27205c33a29cd75dc71",
+      "dirty": false,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "9.0.3",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2",
+      "bandit": "1.9.4",
+      "mutmut": "3.8.0"
+    }
+  }
+}
