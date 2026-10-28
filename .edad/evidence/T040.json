@@ -1,0 +1,75 @@
+{
+  "ticket": "T040",
+  "started_at": "2026-10-28T18:01:07.538929+00:00",
+  "commit": "1c6f862c9300ebbf7858771bb337d502e8afabf4",
+  "base_ref": "882d072f661c10d44e56a7b8fc836bc0febaa793",
+  "gate": "full_gate",
+  "freeze_ok": true,
+  "commands_ok": true,
+  "scope_violations": [],
+  "scope_enforced": true,
+  "violations": [],
+  "changed_files": [
+    "edad/review.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest -q",
+      "exit_code": 0,
+      "duration_s": 32.42,
+      "output_tail": "........................................................................ [ 21%]\n........................................................................ [ 43%]\n........................................................................ [ 65%]\n........................................................................ [ 87%]\n..........................................                               [100%]\n330 passed in 32.14s\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "duration_s": 0.07,
+      "output_tail": "All checks passed!\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    }
+  ],
+  "decisions": [
+    "D30"
+  ],
+  "red_proof": [
+    {
+      "command": "python3 -m pytest tests/test_review_isolation.py::test_the_reviewer_runs_in_an_empty_directory_outside_the_repo -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_review_isolation.py::test_the_reviewer_runs_in_an_empty_directory_outside_the_repo"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_review_isolation.py::test_the_reviewer_argv_replaces_the_default_system_prompt -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_review_isolation.py::test_the_reviewer_argv_replaces_the_default_system_prompt"
+      ]
+    }
+  ],
+  "mutation_proof": null,
+  "approved": true,
+  "ticket_verified": true,
+  "baseline_commit": null,
+  "new_failures": {},
+  "uncomparable_failures": [],
+  "harness": {
+    "version": null,
+    "commit": "882d072f661c10d44e56a7b8fc836bc0febaa793",
+    "dirty": false,
+    "source": "checkout"
+  },
+  "toolchain": {
+    "pytest": "9.0.3",
+    "ruff": "0.15.18",
+    "PyYAML": "6.0.2",
+    "bandit": "1.9.4",
+    "mutmut": "3.8.0"
+  },
+  "passed": true,
+  "passed_modulo_baseline": false
+}
