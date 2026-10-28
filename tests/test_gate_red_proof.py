@@ -330,6 +330,7 @@ def approve_red(tmp_path: Path, monkeypatch, table: dict, acceptance: list[str])
     monkeypatch.setattr(gate, "gate_toolchain_problems", lambda root: [])
     monkeypatch.setattr(gate, "run_full_gate_probe", lambda root, tkt: [])
     monkeypatch.setattr(gate, "run_commands", FakeRun(table))
+    monkeypatch.setattr(gate, "review_problems", lambda root, ticket: [])
 
     args = argparse.Namespace(ticket="T900", allow_passing=False, rebaseline=False)
     assert cmd_approve(args) == 0

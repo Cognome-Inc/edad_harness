@@ -1,0 +1,116 @@
+{
+  "tests/test_gate_approve.py": "008f49c8f8cb15c7f80806c8de5f56d84690aedb7e8ed6c565bc3554b201c4e2",
+  "tests/test_gate_red_proof.py": "bf1b5b62222fcb6353318cf537b00cb88ffcba8f949096a48b59cdc48de5db96",
+  "tests/test_gate_mutation.py": "67428aa992fcb8a55a9ffe2d16c6fb0c410eb5d94021634f03b0573f41d49d01",
+  "tests/test_harness_identity.py": "e9e1e37b6e1aa2720629924a2fa79a8d618c9cebbc14fe7939a564981aabcccc",
+  "_edad": {
+    "approved_at": "2026-10-28T13:03:18.174293+00:00",
+    "ticket_sha256": "521e0cef0b490d17128294d7d45cdb11c9cf167d5f3b609f3df38f9dc150e5ee",
+    "decisions": [
+      "D2",
+      "D12",
+      "D22",
+      "D25",
+      "D26"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_gate_approve.py::test_approve_refuses_without_a_passing_review_for_these_exact_test_bytes -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_approve.py::test_approve_refuses_without_a_passing_review_for_these_exact_test_bytes"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_approve.py::test_approve_refuses_when_criteria_changed_since_human_approval -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_approve.py::test_approve_refuses_when_criteria_changed_since_human_approval"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_approve.py::test_human_override_records_who_approved -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_approve.py::test_human_override_records_who_approved"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_approve.py::test_approve_criteria_accepts_several_tickets_and_fingerprints_each -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_approve.py::test_approve_criteria_accepts_several_tickets_and_fingerprints_each"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_approve.py::test_approve_criteria_refuses_without_a_terminal -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_approve.py::test_approve_criteria_refuses_without_a_terminal"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_approve.py::test_override_review_refuses_without_a_terminal -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_approve.py::test_override_review_refuses_without_a_terminal"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_approve.py::test_override_record_lets_reapproval_pass_while_the_tests_are_unchanged -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_approve.py::test_override_record_lets_reapproval_pass_while_the_tests_are_unchanged"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_gate_approve.py::test_criteria_fingerprint_covers_acceptance_decisions_scope_and_full_gate_only -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_gate_approve.py::test_criteria_fingerprint_covers_acceptance_decisions_scope_and_full_gate_only"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-10-28T13:03:15.874907+00:00",
+      "commit": "67d8941dedb013e901becbf69063fd18e0c89b43",
+      "commands": {
+        "python3 -m pytest tests/test_gate_red_proof.py tests/test_gate_mutation.py tests/test_harness_identity.py -q": {
+          "exit_code": 0,
+          "keys": {}
+        },
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_gate_approve.py::test_approve_refuses_without_a_passing_review_for_these_exact_test_bytes": 1,
+            "pytest:tests/test_gate_approve.py::test_approve_refuses_when_criteria_changed_since_human_approval": 1,
+            "pytest:tests/test_gate_approve.py::test_human_override_records_who_approved": 1,
+            "pytest:tests/test_gate_approve.py::test_approve_criteria_accepts_several_tickets_and_fingerprints_each": 1,
+            "pytest:tests/test_gate_approve.py::test_approve_criteria_refuses_without_a_terminal": 1,
+            "pytest:tests/test_gate_approve.py::test_override_review_refuses_without_a_terminal": 1,
+            "pytest:tests/test_gate_approve.py::test_override_record_lets_reapproval_pass_while_the_tests_are_unchanged": 1,
+            "pytest:tests/test_gate_approve.py::test_criteria_fingerprint_covers_acceptance_decisions_scope_and_full_gate_only": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "67d8941dedb013e901becbf69063fd18e0c89b43",
+      "dirty": false,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "9.0.3",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2",
+      "bandit": "1.9.4",
+      "mutmut": "3.8.0"
+    }
+  }
+}

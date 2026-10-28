@@ -14,8 +14,13 @@ exit code and duration, and the tail of each command's output. That record is
 the evidence. The agent's own account of its work is not an input here.
 
 Usage
+    python3 -m edad.gate approve-criteria T001 [T002 ...]   # at a terminal
+    python3 -m edad.gate override-review  T001 --reason "..." # at a terminal
     python3 -m edad.gate approve T001
     python3 -m edad.gate run     T001 [--base-ref REF] [--full]
+
+approve refuses until a human has approved the ticket's criteria and a passing
+test review - or a human override - matches the frozen tests as they are now.
 """
 
 from __future__ import annotations
@@ -286,6 +291,13 @@ class Record:
 # --- checks ----------------------------------------------------------------
 
 
+def hash_record_path(root: Path, ticket_id: str, kind: str | None = None) -> Path:
+    """`<T>.json` is the approval lock; the review, override and criteria
+    records sit beside it as `<T>.<kind>.json`."""
+    name = f"{ticket_id}.{kind}.json" if kind else f"{ticket_id}.json"
+    return root / ".edad" / "hashes" / name
+
+
 def check_freeze(root: Path, ticket: dict) -> tuple[bool, list[str]]:
     """The acceptance tests AND the ticket itself must be byte-identical to what
     was approved.
@@ -299,7 +311,7 @@ def check_freeze(root: Path, ticket: dict) -> tuple[bool, list[str]]:
     whole class.
     """
     frozen = ticket.get("frozen") or []
-    lock_path = root / ".edad" / "hashes" / f"{ticket['id']}.json"
+    lock_path = hash_record_path(root, ticket["id"])
     if not lock_path.exists():
         if not frozen:
             return True, []
@@ -411,7 +423,7 @@ def approval_meta(root: Path, ticket_id: str) -> dict:
     the red proof citable: approve records it, and evaluate copies it into the
     record instead of leaving it in a file nothing reads.
     """
-    lock_path = root / ".edad" / "hashes" / f"{ticket_id}.json"
+    lock_path = hash_record_path(root, ticket_id)
     if not lock_path.exists():
         return {}
     try:
@@ -1449,7 +1461,8 @@ def _git_answer(root: Path, *args: str) -> str | None:
 
     Tolerant where git_raw is strict, for the two questions the mutation proof
     asks before it has established anything about `root`: is a frozen path dirty,
-    and what is HEAD. None means there is no repository here - which approve
+    and what is HEAD - and for the approver's `user.email`, where no answer and
+    an empty one both mean nobody to record. None means there is no repository here - which approve
     cannot reach, having resolved `root` from git in the first place.
     """
     try:
@@ -1715,15 +1728,75 @@ def print_baseline(baseline: dict) -> None:
             print("    ! cannot be ratcheted; this command stays all-or-nothing")
 
 
+CRITERIA_FIELDS = ("acceptance", "decisions", "scope", "full_gate")
+
+
+def criteria_sha256(ticket: dict) -> str:
+    """Fingerprint of what a human approves: acceptance, decisions, scope and
+    full_gate, and nothing else in the ticket (review-loops D26)."""
+    body = {k: ticket.get(k) for k in CRITERIA_FIELDS}
+    return hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
+
+
+def read_record(root: Path, ticket_id: str, kind: str) -> dict | None:
+    """A missing or unreadable record counts as no record."""
+    try:
+        data = json.loads(hash_record_path(root, ticket_id, kind).read_text())
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def frozen_hashes_now(root: Path, ticket: dict) -> dict[str, str]:
+    return {rel: sha256(root / rel) for rel in ticket.get("frozen") or []}
+
+
+def die_on_missing_frozen(root: Path, frozen: list[str]) -> None:
+    for rel in frozen:
+        if not (root / rel).exists():
+            die(f"frozen file does not exist: {rel}")
+
+
+def review_problems(root: Path, ticket: dict) -> list[str]:
+    """Why approve may not lock this ticket yet, one line per reason; [] when it
+    may (review-loops D2, D25)."""
+    tid = ticket["id"]
+    problems = []
+    now = frozen_hashes_now(root, ticket)
+
+    review = read_record(root, tid, "review")
+    rounds = review.get("rounds") if review else None
+    reviewed = isinstance(rounds, list) and any(
+        isinstance(r, dict) and r.get("verdict") == "pass" and r.get("frozen") == now
+        for r in rounds
+    )
+    override = read_record(root, tid, "override")
+    overridden = bool(override) and override.get("frozen") == now
+    if not reviewed and not overridden:
+        problems.append(
+            f"{tid}: no passing review (or human override) matches the current frozen "
+            "test bytes; run the test review, or `override-review` at a terminal"
+        )
+
+    approved = read_record(root, tid, "criteria")
+    if not approved or approved.get("sha256") != criteria_sha256(ticket):
+        problems.append(
+            f"{tid}: criteria not approved, or changed since approval; "
+            f"run `approve-criteria {tid}` at a terminal"
+        )
+    return problems
+
+
 def cmd_approve(args) -> int:
     root = repo_root()
     ticket = load_ticket(root, args.ticket)
     frozen = ticket.get("frozen") or []
     if not frozen:
         die("ticket declares no frozen files; nothing to approve")
-    for rel in frozen:
-        if not (root / rel).exists():
-            die(f"frozen file does not exist: {rel}")
+    die_on_missing_frozen(root, frozen)
+    problems = review_problems(root, ticket)
+    if problems:
+        die("; ".join(problems))
 
     commands = ticket.get("acceptance") or []
     # Reads the ticket and validates it; this is also what refuses
@@ -1762,7 +1835,7 @@ def cmd_approve(args) -> int:
     mutation_proof = prove_mutation_or_die(root, ticket, commands) if mutations else None
     red = prove_red_or_die(root, ticket, commands) if prove_red else []
 
-    hashes = {rel: sha256(root / rel) for rel in frozen}
+    hashes = frozen_hashes_now(root, ticket)
     lock = dict(hashes)
     # Reserved key: frozen entries are relative paths and never collide with it.
     lock[LOCK_META_KEY] = {
@@ -1796,9 +1869,7 @@ def cmd_approve(args) -> int:
         "harness": harness_identity(),
         "toolchain": versions_of(measurements),
     }
-    out = root / ".edad" / "hashes" / f"{ticket['id']}.json"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(lock, indent=2) + "\n")
+    write_hash_record(root, ticket["id"], None, lock)
     print(f"approved {ticket['id']}: {len(hashes)} frozen file(s)")
     for rel, h in hashes.items():
         print(f"  {h[:12]}  {rel}")
@@ -1806,6 +1877,60 @@ def cmd_approve(args) -> int:
     print_approval_proof(red, mutation_proof)
     if baseline:
         print_baseline(baseline)
+    return 0
+
+
+def die_unless_terminal() -> None:
+    if not sys.stdin.isatty():
+        die("this command needs a human at a terminal; stdin is not one")
+
+
+def approver_email(root: Path) -> str:
+    # Tolerant: an unset email and a git that cannot answer both leave nobody to
+    # record, and both refuse here with the same message.
+    out = (_git_answer(root, "config", "user.email") or "").strip()
+    if not out:
+        die("git config user.email is unset; there is nobody to record as the approver")
+    return out
+
+
+def write_hash_record(root: Path, ticket_id: str, kind: str | None, record: dict) -> None:
+    out = hash_record_path(root, ticket_id, kind)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(record, indent=2) + "\n")
+
+
+def cmd_approve_criteria(args) -> int:
+    """`approve-criteria <T...>` (review-loops D12, D22, D26)."""
+    die_unless_terminal()
+    root = repo_root()
+    email = approver_email(root)
+    tickets = [load_ticket(root, t) for t in args.tickets]
+    for ticket in tickets:
+        tid = ticket["id"]
+        write_hash_record(root, tid, "criteria", {
+            "sha256": criteria_sha256(ticket),
+            "approved_by": email,
+            "approved_at": datetime.now(UTC).isoformat(),
+        })
+        print(f"approved criteria for {tid} as {email}")
+    return 0
+
+
+def cmd_override_review(args) -> int:
+    """`override-review <T> --reason "..."` (review-loops D2, D22)."""
+    die_unless_terminal()
+    root = repo_root()
+    email = approver_email(root)
+    ticket = load_ticket(root, args.ticket)
+    die_on_missing_frozen(root, ticket.get("frozen") or [])
+    write_hash_record(root, ticket["id"], "override", {
+        "approved_by": email,
+        "reason": args.reason,
+        "approved_at": datetime.now(UTC).isoformat(),
+        "frozen": frozen_hashes_now(root, ticket),
+    })
+    print(f"override recorded for {ticket['id']} as {email}")
     return 0
 
 
@@ -2140,7 +2265,8 @@ def main() -> int:
     p = argparse.ArgumentParser(prog="edad.gate")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    a = sub.add_parser("approve", help="record hashes of the ticket's frozen files")
+    a = sub.add_parser("approve", help="lock the ticket's frozen files; needs approved criteria "
+                       "and a passing review or override")
     a.add_argument("ticket")
     a.add_argument("--allow-passing", action="store_true",
                    help="approve even if the acceptance commands already pass")
@@ -2148,6 +2274,17 @@ def main() -> int:
                    help="deliberately widen the full_gate baseline to include failures "
                         "that appeared since the last approval")
     a.set_defaults(func=cmd_approve)
+
+    c = sub.add_parser("approve-criteria",
+                       help="record, at a terminal, that you approve each ticket's criteria")
+    c.add_argument("tickets", nargs="+")
+    c.set_defaults(func=cmd_approve_criteria)
+
+    o = sub.add_parser("override-review",
+                       help="approve, at a terminal, these exact frozen tests without a review")
+    o.add_argument("ticket")
+    o.add_argument("--reason", required=True)
+    o.set_defaults(func=cmd_override_review)
 
     r = sub.add_parser("run", help="verify a ticket and write an evidence record")
     r.add_argument("ticket")
