@@ -1715,6 +1715,13 @@ def print_baseline(baseline: dict) -> None:
             print("    ! cannot be ratcheted; this command stays all-or-nothing")
 
 
+def review_problems(root: Path, ticket: dict) -> list[str]:
+    """Why approve may not lock this ticket yet, one line per reason; [] when it
+    may (review-loops D2, D25). STUB (T029 contract): the ticket's agent
+    replaces this body."""
+    return []
+
+
 def cmd_approve(args) -> int:
     root = repo_root()
     ticket = load_ticket(root, args.ticket)
@@ -1806,6 +1813,18 @@ def cmd_approve(args) -> int:
     print_approval_proof(red, mutation_proof)
     if baseline:
         print_baseline(baseline)
+    return 0
+
+
+def cmd_approve_criteria(args) -> int:
+    """`approve-criteria <T...>` (review-loops D12, D22, D26). STUB (T029
+    contract): the ticket's agent replaces this body."""
+    return 0
+
+
+def cmd_override_review(args) -> int:
+    """`override-review <T> --reason "..."` (review-loops D2, D22). STUB (T029
+    contract): the ticket's agent replaces this body."""
     return 0
 
 
@@ -2148,6 +2167,17 @@ def main() -> int:
                    help="deliberately widen the full_gate baseline to include failures "
                         "that appeared since the last approval")
     a.set_defaults(func=cmd_approve)
+
+    c = sub.add_parser("approve-criteria",
+                       help="record, at a terminal, that you approve each ticket's criteria")
+    c.add_argument("tickets", nargs="+")
+    c.set_defaults(func=cmd_approve_criteria)
+
+    o = sub.add_parser("override-review",
+                       help="approve, at a terminal, these exact frozen tests without a review")
+    o.add_argument("ticket")
+    o.add_argument("--reason", required=True)
+    o.set_defaults(func=cmd_override_review)
 
     r = sub.add_parser("run", help="verify a ticket and write an evidence record")
     r.add_argument("ticket")

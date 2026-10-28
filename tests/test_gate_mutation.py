@@ -518,6 +518,7 @@ def approve_with(tmp_path: Path, monkeypatch, mutation_proof: dict) -> dict:
     monkeypatch.setattr(gate, "run_full_gate_probe", lambda root, tkt: [])
     monkeypatch.setattr(gate, "prove_red_or_die", no_red_proof_here)
     monkeypatch.setattr(gate, "prove_mutation_or_die", lambda r, t, c: mutation_proof)
+    monkeypatch.setattr(gate, "review_problems", lambda root, ticket: [])
 
     args = argparse.Namespace(ticket="T900", allow_passing=False, rebaseline=False)
     assert cmd_approve(args) == 0

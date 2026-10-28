@@ -140,6 +140,7 @@ def approve_fakes(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(gate, "run_full_gate_probe", lambda root, ticket: [])
     monkeypatch.setattr(gate, "run_commands", FakeRun({ACC: (1, failed(NODE), False)}))
     monkeypatch.setattr(gate, "harness_identity", lambda: dict(HARNESS))
+    monkeypatch.setattr(gate, "review_problems", lambda root, ticket: [])
 
 
 def evaluate_fakes(monkeypatch) -> None:
