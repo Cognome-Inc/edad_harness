@@ -1,0 +1,58 @@
+{
+  "tests/test_review_isolation.py": "4e6f5a3d155eb3f2f941c8c677c0d14377bc297f12e89ec273d7458de2bde8bd",
+  "live_tests/test_reviewer_isolation.py": "22aced31b5b62667f5863cf598bf6a836e273d27d5efdd22f132b9edc2efec3d",
+  "_edad": {
+    "approved_at": "2026-10-28T17:58:30.401167+00:00",
+    "ticket_sha256": "627a60c8d65a889711ba680845ac8f8bf801329b9da98a2e5662d2cc4f538edf",
+    "decisions": [
+      "D30"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_review_isolation.py::test_the_reviewer_runs_in_an_empty_directory_outside_the_repo -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_isolation.py::test_the_reviewer_runs_in_an_empty_directory_outside_the_repo"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_review_isolation.py::test_the_reviewer_argv_replaces_the_default_system_prompt -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_isolation.py::test_the_reviewer_argv_replaces_the_default_system_prompt"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-10-28T17:58:29.855354+00:00",
+      "commit": "8428c1099b215e59d9f39df8e8eb2d724275064b",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_review_isolation.py::test_the_reviewer_runs_in_an_empty_directory_outside_the_repo": 1,
+            "pytest:tests/test_review_isolation.py::test_the_reviewer_argv_replaces_the_default_system_prompt": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "8428c1099b215e59d9f39df8e8eb2d724275064b",
+      "dirty": false,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "9.0.3",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2",
+      "bandit": "1.9.4",
+      "mutmut": "3.8.0"
+    }
+  }
+}
