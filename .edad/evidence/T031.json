@@ -1,0 +1,141 @@
+{
+  "ticket": "T031",
+  "started_at": "2026-10-28T16:26:42.346115+00:00",
+  "commit": "c87693d06bd3852e8b55140a3aad63987690cb9c",
+  "base_ref": "3939a2d64d378bfe17beda21ba1bbc801f5afaeb",
+  "gate": "full_gate",
+  "freeze_ok": true,
+  "commands_ok": true,
+  "scope_violations": [],
+  "scope_enforced": true,
+  "violations": [],
+  "changed_files": [
+    ".claude/skills/to-tickets/SKILL.md",
+    "edad/review.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest -q",
+      "exit_code": 0,
+      "duration_s": 31.43,
+      "output_tail": "........................................................................ [ 21%]\n........................................................................ [ 43%]\n........................................................................ [ 65%]\n........................................................................ [ 87%]\n........................................                                 [100%]\n328 passed in 31.22s\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "duration_s": 0.06,
+      "output_tail": "All checks passed!\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    }
+  ],
+  "decisions": [
+    "D1",
+    "D9",
+    "D27"
+  ],
+  "red_proof": [
+    {
+      "command": "python3 -m pytest tests/test_test_review.py::test_review_stops_after_three_rounds_and_leaves_ticket_unlocked -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_test_review.py::test_review_stops_after_three_rounds_and_leaves_ticket_unlocked"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_test_review.py::test_review_passes_with_only_nits_left -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_test_review.py::test_review_passes_with_only_nits_left"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_test_review.py::test_a_disputed_finding_and_its_reason_reach_the_next_reviewer -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_test_review.py::test_a_disputed_finding_and_its_reason_reach_the_next_reviewer"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_test_review.py::test_malformed_reviewer_output_counts_as_a_failed_round -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_test_review.py::test_malformed_reviewer_output_counts_as_a_failed_round"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_test_review.py::test_review_record_is_written_beside_the_lock -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_test_review.py::test_review_record_is_written_beside_the_lock"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_test_review.py::test_each_invocation_runs_one_round_and_a_fourth_is_refused -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_test_review.py::test_each_invocation_runs_one_round_and_a_fourth_is_refused"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_test_review.py::test_round_counter_resets_only_when_criteria_are_reapproved -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_test_review.py::test_round_counter_resets_only_when_criteria_are_reapproved"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_test_review.py::test_a_dispute_that_names_no_finding_of_the_last_round_is_refused -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_test_review.py::test_a_dispute_that_names_no_finding_of_the_last_round_is_refused"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_test_review.py::test_the_reviewer_is_given_the_spec_every_frozen_file_and_the_tests_rubric_and_no_tools -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_test_review.py::test_the_reviewer_is_given_the_spec_every_frozen_file_and_the_tests_rubric_and_no_tools"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_test_review.py::test_a_passing_round_runs_gate_approve_in_the_repo -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_test_review.py::test_a_passing_round_runs_gate_approve_in_the_repo"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_test_review.py::test_a_reviewer_that_fails_to_run_uses_up_no_round -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_test_review.py::test_a_reviewer_that_fails_to_run_uses_up_no_round"
+      ]
+    }
+  ],
+  "mutation_proof": null,
+  "approved": true,
+  "ticket_verified": true,
+  "baseline_commit": null,
+  "new_failures": {},
+  "uncomparable_failures": [],
+  "harness": {
+    "version": null,
+    "commit": "3939a2d64d378bfe17beda21ba1bbc801f5afaeb",
+    "dirty": false,
+    "source": "checkout"
+  },
+  "toolchain": {
+    "pytest": "9.0.3",
+    "ruff": "0.15.18",
+    "PyYAML": "6.0.2",
+    "bandit": "1.9.4",
+    "mutmut": "3.8.0"
+  },
+  "passed": true,
+  "passed_modulo_baseline": false
+}
