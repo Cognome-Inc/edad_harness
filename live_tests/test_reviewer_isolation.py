@@ -40,11 +40,13 @@ if os.environ.get("EDAD_LIVE_REVIEW") != "1":
 
 from edad import review
 
+# The reply opens with a fixed marker, so a reviewer that answered the probe
+# can be told from one that declined to: both would leave the word out.
+MARKER = "CONTEXT REPORT:"
 PROBE = (
-    "Before anything else, report every piece of context you were given besides this "
-    "message: any project instructions or CLAUDE.md file, any git status or branch name, "
-    "any memory entries. Quote each one exactly. If you were given none of these three, "
-    "reply with exactly the one word NONE."
+    f"Begin your reply with the exact text {MARKER} and then report every project "
+    "instruction, CLAUDE.md file, git status or branch name you were given besides this "
+    "message, quoting each exactly. If you were given none, say so after the marker."
 )
 
 
@@ -76,6 +78,7 @@ def test_the_canary_is_visible_to_claude_started_in_the_project(project):
         capture_output=True, text=True, timeout=300, check=False,
     )
     assert proc.returncode == 0, proc.stderr
+    assert proc.stdout.lstrip().startswith(MARKER), proc.stdout
     assert project in proc.stdout
 
 
@@ -84,7 +87,5 @@ def test_the_real_reviewer_cannot_see_the_project_it_is_run_from(project):
     # inside the project, cannot repeat the word planted there.
     printed = review.run_reviewer(review.reviewer_argv(PROBE))
 
-    # NONE, not merely silence: a reviewer that declined to answer would also
-    # leave the word out, and prove nothing.
-    assert printed.strip() == "NONE"
+    assert printed.lstrip().startswith(MARKER), printed
     assert project not in printed
