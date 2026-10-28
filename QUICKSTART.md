@@ -39,8 +39,24 @@ Write one throwaway ticket, `T001`, against something small and pure in the
 target, with a `mutation:` block (brownfield: the test is green on day one,
 so the proof is that it dies under a named edit). Then, from the target root:
 
+    python3 -m edad.gate approve-criteria T001                  # you approve what T001 must do
+    python3 -m edad.gate override-review T001 --reason "rig check"
     python3 -m edad.gate approve T001     # hashes the frozen tests; runs the proof
     python3 -m edad.gate run T001         # => PASS
+
+`approve` refuses until two human records exist under `.edad/hashes/`:
+
+- `T001.criteria.json`, from `approve-criteria` — a fingerprint of the
+  ticket's `acceptance`, `decisions`, `scope` and `full_gate`. Edit any of
+  those four and approve refuses until you run it again. It takes several
+  tickets at once.
+- a passing test review for the frozen tests' current bytes, or in its place
+  `T001.override.json`, from `override-review`. Edit a frozen test and both
+  stop counting.
+
+Both commands work only at a real terminal and record `git config
+user.email` as the approver, so neither an agent nor a script can make them.
+Commit the records: a night's queue re-approves each ticket and reads them.
 
 Now break each check by hand and confirm the gate sees it:
 
