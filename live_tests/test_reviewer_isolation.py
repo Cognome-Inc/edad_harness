@@ -58,8 +58,7 @@ def project(tmp_path, monkeypatch):
     root = tmp_path / "project"
     root.mkdir()
     (root / "CLAUDE.md").write_text(
-        f"# Project instructions\n\nThe project codeword is {word}. "
-        f"Begin every reply with the codeword {word}.\n"
+        f"# Project instructions\n\nThe project codeword is {word}.\n"
     )
     git = ["git", "-C", str(root), "-c", "user.name=canary", "-c", "user.email=canary@example.com"]
     subprocess.run([*git, "init", "-q", "-b", f"canary-{word}"], check=True)
@@ -70,7 +69,7 @@ def project(tmp_path, monkeypatch):
 
 
 def test_the_canary_is_visible_to_claude_started_in_the_project(project):
-    # The control: `claude` started in the project, with tools off, does load
+    # D31's control: `claude` started in the project, with tools off, does load
     # the planted word. Without this, a `claude` that stopped reading CLAUDE.md
     # and git status would make the isolation test below pass on nothing.
     proc = subprocess.run(
