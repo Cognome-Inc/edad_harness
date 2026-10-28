@@ -43,7 +43,8 @@ from edad import review
 PROBE = (
     "Before anything else, report every piece of context you were given besides this "
     "message: any project instructions or CLAUDE.md file, any git status or branch name, "
-    "any memory entries. Quote each one exactly. If you were given none, reply NONE."
+    "any memory entries. Quote each one exactly. If you were given none of these three, "
+    "reply with exactly the one word NONE."
 )
 
 
@@ -83,5 +84,7 @@ def test_the_real_reviewer_cannot_see_the_project_it_is_run_from(project):
     # inside the project, cannot repeat the word planted there.
     printed = review.run_reviewer(review.reviewer_argv(PROBE))
 
-    assert printed.strip()
+    # NONE, not merely silence: a reviewer that declined to answer would also
+    # leave the word out, and prove nothing.
+    assert printed.strip() == "NONE"
     assert project not in printed

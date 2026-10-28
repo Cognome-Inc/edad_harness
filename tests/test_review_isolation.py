@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import yaml
@@ -74,8 +75,16 @@ def no_process(*args, **kwargs):
 def test_the_reviewer_runs_in_an_empty_directory_outside_the_repo(monkeypatch, tmp_path):
     # D30: the reviewer process starts in a fresh empty directory with no
     # project above it, so `claude` finds no CLAUDE.md, git status or project
-    # memory, and the directory is gone once the reviewer has exited.
-    root = make_repo(tmp_path / "repo")
+    # memory, and the directory is gone once the reviewer has exited, whether
+    # it judged anything or crashed. The system temp location is pinned to a
+    # directory beside the repo, so the outcome does not depend on where the
+    # machine running this keeps its temp files.
+    base = tmp_path.resolve()
+    root = make_repo(base / "repo")
+    system_tmp = base / "system-tmp"
+    system_tmp.mkdir()
+    monkeypatch.setattr(tempfile, "tempdir", str(system_tmp))
+    exits = [1, 0]  # a reviewer that crashes, then one that judges
     seen = []
 
     def fake_run(argv, **kwargs):
@@ -85,15 +94,18 @@ def test_the_reviewer_runs_in_an_empty_directory_outside_the_repo(monkeypatch, t
             "cwd_given": cwd is not None,
             "is_dir": where is not None and where.is_dir(),
             "empty": where is not None and where.is_dir() and list(where.iterdir()) == [],
-            "inside_repo": where is not None and where.is_relative_to(root.resolve()),
+            "inside_repo": where is not None and where.is_relative_to(root),
+            "in_system_temp": where is not None and where.is_relative_to(system_tmp),
             "project_above": where is not None and any(
                 (p / marker).exists()
                 for p in (where, *where.parents)
+                if p.is_relative_to(base)
                 for marker in (".git", "CLAUDE.md")
             ),
             "path": where,
         })
-        return subprocess.CompletedProcess(argv, 0, stdout=NITS_ONLY, stderr="")
+        code = exits.pop(0)
+        return subprocess.CompletedProcess(argv, code, stdout=NITS_ONLY, stderr="crashed")
 
     approvals = []
     monkeypatch.setenv("EDAD_REPO", str(root))
@@ -102,23 +114,27 @@ def test_the_reviewer_runs_in_an_empty_directory_outside_the_repo(monkeypatch, t
     monkeypatch.setattr(subprocess, "run", fake_run)
     monkeypatch.setattr(subprocess, "Popen", no_process)
     monkeypatch.setattr(sys, "argv", ["edad.review", "tests", TICKET])
-    try:
-        code = review.main()
-    except SystemExit as exc:
-        code = exc.code
+    codes = []
+    for _ in range(2):
+        try:
+            codes.append(review.main())
+        except SystemExit as exc:
+            codes.append(exc.code)
 
-    launch = seen[0] if len(seen) == 1 else {}
-    keys = ("cwd_given", "is_dir", "empty", "inside_repo", "project_above")
-    facts = {k: launch.get(k) for k in keys}
-    assert (code, len(seen), approvals) == (0, 1, [TICKET])
-    assert facts == {
+    keys = ("cwd_given", "is_dir", "empty", "inside_repo", "in_system_temp", "project_above")
+    facts = [{k: launch[k] for k in keys} for launch in seen]
+    assert (codes, len(seen), approvals) == ([2, 0], 2, [TICKET])
+    assert facts == [{
         "cwd_given": True,
         "is_dir": True,
         "empty": True,
         "inside_repo": False,
+        "in_system_temp": True,
         "project_above": False,
-    }
-    assert launch["path"] is not None and not launch["path"].exists()
+    }] * 2
+    paths = [launch["path"] for launch in seen]
+    assert paths[0] != paths[1]  # fresh each time, never reused
+    assert [p.exists() for p in paths] == [False, False]
 
 
 def system_prompts(argv: list[str]) -> list[str]:
