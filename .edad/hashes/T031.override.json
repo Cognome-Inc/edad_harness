@@ -1,0 +1,8 @@
+{
+  "approved_by": "130494653+cnelapatla@users.noreply.github.com",
+  "reason": "bootstrap: edad.review tests is this ticket",
+  "approved_at": "2026-10-28T16:23:41.390417+00:00",
+  "frozen": {
+    "tests/test_test_review.py": "f0a886a7c692aab75152e671bc51ae3119190f2b7b64e47a7f21ed981606eb71"
+  }
+}

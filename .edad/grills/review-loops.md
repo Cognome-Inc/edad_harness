@@ -381,7 +381,7 @@ itself (D1's auto-lock).
 Rejected: deleting the review record resets the counter — the cap stops
 meaning anything. Rejected: an in-process loop with a fresh writer agent —
 reverses D5; the writer would lose the spec conversation.
-Verify: `python3 -m pytest tests/test_test_review.py::test_each_invocation_runs_one_round_and_a_fourth_is_refused tests/test_test_review.py::test_round_counter_resets_only_when_criteria_are_reapproved -q`
+Verify: `python3 -m pytest tests/test_test_review.py::test_each_invocation_runs_one_round_and_a_fourth_is_refused tests/test_test_review.py::test_round_counter_resets_only_when_criteria_are_reapproved tests/test_test_review.py::test_a_dispute_that_names_no_finding_of_the_last_round_is_refused tests/test_test_review.py::test_the_reviewer_is_given_the_spec_every_frozen_file_and_the_tests_rubric_and_no_tools tests/test_test_review.py::test_a_passing_round_runs_gate_approve_in_the_repo tests/test_test_review.py::test_a_reviewer_that_fails_to_run_uses_up_no_round -q`
 
 **Amended D3, D16, D20 — the shared panel test file is split by seam (gap 7).**
 `tests/test_review_panel.py` was frozen by eleven decisions, forcing strictly
@@ -671,7 +671,7 @@ decisions:
   - id: D27
     decision: each `edad.review tests <T>` invocation runs one round; rounds and --dispute F<n>="reason" accumulate in .edad/hashes/<T>.review.json; a fourth round is refused; the counter resets only on a new approve-criteria over changed criteria; a passing round runs gate approve
     verify:
-      - python3 -m pytest tests/test_test_review.py::test_each_invocation_runs_one_round_and_a_fourth_is_refused tests/test_test_review.py::test_round_counter_resets_only_when_criteria_are_reapproved -q
+      - python3 -m pytest tests/test_test_review.py::test_each_invocation_runs_one_round_and_a_fourth_is_refused tests/test_test_review.py::test_round_counter_resets_only_when_criteria_are_reapproved tests/test_test_review.py::test_a_dispute_that_names_no_finding_of_the_last_round_is_refused tests/test_test_review.py::test_the_reviewer_is_given_the_spec_every_frozen_file_and_the_tests_rubric_and_no_tools tests/test_test_review.py::test_a_passing_round_runs_gate_approve_in_the_repo tests/test_test_review.py::test_a_reviewer_that_fails_to_run_uses_up_no_round -q
     frozen:
       - tests/test_test_review.py
     scope:

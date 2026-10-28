@@ -296,9 +296,19 @@ diff touches nothing outside `scope`.
 
 State for each ticket: its id, what it makes work, its blockers, the decision ids it
 discharges, and the exact command that decides it. Then confirm with the user before
-running `edad.gate approve`. Approval hashes the acceptance tests *and the ticket file
+asking the operator for `approve-criteria`. Approval hashes the acceptance tests *and the ticket file
 itself* into the lock, so `scope`, `acceptance`, `kill_conditions` and `decisions` are
 part of the contract too — editing any of them afterwards fails the freeze check until
 you re-approve. Nothing records approval inside the ticket: the lock's existence is the
 approval, and `_edad.approved_at` is its timestamp. A ticket that claimed its own
 `status: approved` was vouching for itself.
+
+### Daytime test review
+
+1. Ask the operator to run `approve-criteria <T>` at a terminal.
+2. Run `python3 -m edad.review tests <T>` once per round; a passing round runs
+   `edad.gate approve` itself.
+3. On a failed round, revise the tests, or dispute findings by id with
+   `--dispute F3="reason"` (repeatable), then run it again.
+4. After three failed rounds, change the ticket and ask the operator for
+   `approve-criteria` again, or for `override-review`.
