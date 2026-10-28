@@ -3,9 +3,10 @@
 Kept out of `edad.gate`, which is the judge: agent-invoking code does not belong
 inside the verifier.
 
-STUB (T030 contract). Every name the frozen tests reach exists and returns, so
-each test is red on its assertion rather than on an import or attribute error.
-The ticket's agent replaces these bodies.
+STUB (T031 contract): `cmd_tests`, `run_reviewer` and `run_approve` exist and
+return, and the parser takes `--dispute`, so each frozen test in
+`tests/test_test_review.py` is red on its assertion rather than on an attribute
+error. The ticket's agent replaces these bodies.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from __future__ import annotations
 import argparse
 import sys
 from importlib import resources
+from pathlib import Path
 
 
 def load_rubric(name: str) -> str:
@@ -38,6 +40,16 @@ def reviewer_argv(prompt: str) -> list[str]:
     return ["claude", "-p", prompt]
 
 
+def run_reviewer(argv: list[str]) -> str:
+    """Launch the reviewer and return what it printed."""
+    return ""
+
+
+def run_approve(root: Path, ticket_id: str) -> int:
+    """`python3 -m edad.gate approve <T>` in `root`; its exit code."""
+    return 2
+
+
 def cmd_tests(args: argparse.Namespace) -> int:
     print("edad.review tests: not built yet (T031)", file=sys.stderr)
     return 2
@@ -53,6 +65,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd", required=True)
     t = sub.add_parser("tests", help="review a ticket's frozen tests")
     t.add_argument("ticket")
+    t.add_argument(
+        "--dispute", action="append", default=[], metavar='F<n>="reason"',
+        help="dispute a finding of the last round; the next reviewer rules on it",
+    )
     t.set_defaults(func=cmd_tests)
     n = sub.add_parser("panel", help="re-run the review panel on a worktree")
     n.add_argument("ticket")
