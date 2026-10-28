@@ -1715,11 +1715,57 @@ def print_baseline(baseline: dict) -> None:
             print("    ! cannot be ratcheted; this command stays all-or-nothing")
 
 
+CRITERIA_FIELDS = ("acceptance", "decisions", "scope", "full_gate")
+
+
+def criteria_sha256(ticket: dict) -> str:
+    """Fingerprint of what a human approves: acceptance, decisions, scope and
+    full_gate, and nothing else in the ticket (review-loops D26)."""
+    body = {k: ticket.get(k) for k in CRITERIA_FIELDS}
+    return hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
+
+
+def read_record(root: Path, ticket_id: str, kind: str) -> dict | None:
+    """A missing or unreadable record counts as no record."""
+    try:
+        data = json.loads((root / ".edad" / "hashes" / f"{ticket_id}.{kind}.json").read_text())
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def frozen_hashes_now(root: Path, ticket: dict) -> dict[str, str]:
+    return {rel: sha256(root / rel) for rel in ticket.get("frozen") or []}
+
+
 def review_problems(root: Path, ticket: dict) -> list[str]:
     """Why approve may not lock this ticket yet, one line per reason; [] when it
-    may (review-loops D2, D25). STUB (T029 contract): the ticket's agent
-    replaces this body."""
-    return []
+    may (review-loops D2, D25)."""
+    tid = ticket["id"]
+    problems = []
+    now = frozen_hashes_now(root, ticket)
+
+    review = read_record(root, tid, "review")
+    rounds = review.get("rounds") if review else None
+    reviewed = isinstance(rounds, list) and any(
+        isinstance(r, dict) and r.get("verdict") == "pass" and r.get("frozen") == now
+        for r in rounds
+    )
+    override = read_record(root, tid, "override")
+    overridden = bool(override) and override.get("frozen") == now
+    if not reviewed and not overridden:
+        problems.append(
+            f"{tid}: no passing review (or human override) matches the current frozen "
+            "test bytes; run the test review, or `override-review` at a terminal"
+        )
+
+    approved = read_record(root, tid, "criteria")
+    if not approved or approved.get("sha256") != criteria_sha256(ticket):
+        problems.append(
+            f"{tid}: criteria not approved, or changed since approval; "
+            f"run `approve-criteria {tid}` at a terminal"
+        )
+    return problems
 
 
 def cmd_approve(args) -> int:
@@ -1731,6 +1777,9 @@ def cmd_approve(args) -> int:
     for rel in frozen:
         if not (root / rel).exists():
             die(f"frozen file does not exist: {rel}")
+    problems = review_problems(root, ticket)
+    if problems:
+        die("; ".join(problems))
 
     commands = ticket.get("acceptance") or []
     # Reads the ticket and validates it; this is also what refuses
@@ -1816,15 +1865,63 @@ def cmd_approve(args) -> int:
     return 0
 
 
+def die_unless_terminal() -> None:
+    if not sys.stdin.isatty():
+        die("this command needs a human at a terminal; stdin is not one")
+
+
+def approver_email(root: Path) -> str:
+    try:
+        out = subprocess.run(
+            ["git", "config", "user.email"], cwd=root, capture_output=True, text=True, check=False
+        ).stdout.strip()
+    except OSError:
+        out = ""
+    if not out:
+        die("git config user.email is unset; there is nobody to record as the approver")
+    return out
+
+
+def write_hash_record(root: Path, ticket_id: str, kind: str, record: dict) -> None:
+    out = root / ".edad" / "hashes" / f"{ticket_id}.{kind}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(record, indent=2) + "\n")
+
+
 def cmd_approve_criteria(args) -> int:
-    """`approve-criteria <T...>` (review-loops D12, D22, D26). STUB (T029
-    contract): the ticket's agent replaces this body."""
+    """`approve-criteria <T...>` (review-loops D12, D22, D26)."""
+    die_unless_terminal()
+    root = repo_root()
+    email = approver_email(root)
+    tickets = [load_ticket(root, t) for t in args.tickets]
+    for ticket in tickets:
+        tid = ticket["id"]
+        write_hash_record(root, tid, "criteria", {
+            "sha256": criteria_sha256(ticket),
+            "approved_by": email,
+            "approved_at": datetime.now(UTC).isoformat(),
+        })
+        print(f"approved criteria for {tid} as {email}")
     return 0
 
 
 def cmd_override_review(args) -> int:
-    """`override-review <T> --reason "..."` (review-loops D2, D22). STUB (T029
-    contract): the ticket's agent replaces this body."""
+    """`override-review <T> --reason "..."` (review-loops D2, D22)."""
+    die_unless_terminal()
+    root = repo_root()
+    email = approver_email(root)
+    ticket = load_ticket(root, args.ticket)
+    frozen = ticket.get("frozen") or []
+    for rel in frozen:
+        if not (root / rel).exists():
+            die(f"frozen file does not exist: {rel}")
+    write_hash_record(root, ticket["id"], "override", {
+        "approved_by": email,
+        "reason": args.reason,
+        "approved_at": datetime.now(UTC).isoformat(),
+        "frozen": frozen_hashes_now(root, ticket),
+    })
+    print(f"override recorded for {ticket['id']} as {email}")
     return 0
 
 
