@@ -13,6 +13,7 @@ import json
 import re
 import subprocess
 import sys
+import tempfile
 from importlib import resources
 from pathlib import Path
 
@@ -55,16 +56,27 @@ def review_prompt(
     return text
 
 
+REVIEWER_SYSTEM_PROMPT = (
+    "You are a reviewer. Read the material in the user's message and report "
+    "your findings exactly as that message instructs."
+)
+
+
 def reviewer_argv(prompt: str) -> list[str]:
     """A brand-new `claude -p` reviewer process, never a resumed one (D5), with
-    every tool off: the prompt is all it can read."""
-    return ["claude", "-p", prompt, "--tools", ""]
+    every tool off and a fixed `--system-prompt` in place of Claude Code's
+    default. The prompt is the only task material it gets, but `claude` still
+    injects the account email, username, platform, date and model id."""
+    return ["claude", "-p", prompt, "--system-prompt", REVIEWER_SYSTEM_PROMPT, "--tools", ""]
 
 
 def run_reviewer(argv: list[str]) -> str:
-    """Launch the reviewer and return what it printed. A reviewer that exits
+    """Launch the reviewer in a fresh empty directory outside any project, so
+    `claude` finds no CLAUDE.md, git status or memory; the directory is deleted
+    when the process exits. Return what it printed. A reviewer that exits
     non-zero judged nothing: refuse, so no round is used up."""
-    proc = subprocess.run(argv, capture_output=True, text=True, check=False)
+    with tempfile.TemporaryDirectory(prefix="edad-reviewer-") as empty:
+        proc = subprocess.run(argv, capture_output=True, text=True, check=False, cwd=empty)
     if proc.returncode != 0:
         gate.die(f"the reviewer exited {proc.returncode}; no round recorded: {proc.stderr.strip()}")
     return proc.stdout
