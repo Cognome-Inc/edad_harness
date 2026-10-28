@@ -1,0 +1,93 @@
+{
+  "tests/test_review_cli.py": "baaa8bda9fab1cbec37f7c11e495449cfe728559bb2648ce46c82be4543ffb4c",
+  "tests/test_test_review.py": "0aea2ec290f8e538c3d3cd98438f2e090a681ee9ffba9f3c97227219c2e3bc02",
+  "_edad": {
+    "approved_at": "2026-10-27T22:35:43.187981+00:00",
+    "ticket_sha256": "3ba8f6885b7feac9e4497a72eecf90740f83262d3efcbe81318ed4962853e4f9",
+    "decisions": [
+      "D5",
+      "D17",
+      "D18",
+      "D19"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_reviewer_runs_as_a_new_claude_process_given_only_the_spec_and_tests -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_reviewer_runs_as_a_new_claude_process_given_only_the_spec_and_tests"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_test_review.py::test_reviewer_prompt_holds_the_spec_tests_and_rubric_and_nothing_else -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_test_review.py::test_reviewer_prompt_holds_the_spec_tests_and_rubric_and_nothing_else"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_review_cli.py::test_review_cli_has_tests_and_panel_subcommands -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_cli.py::test_review_cli_has_tests_and_panel_subcommands"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_review_cli.py::test_review_cli_without_a_subcommand_or_ticket_exits_with_usage -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_cli.py::test_review_cli_without_a_subcommand_or_ticket_exits_with_usage"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_review_cli.py::test_every_rubric_item_reaches_the_reviewer_prompt -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_cli.py::test_every_rubric_item_reaches_the_reviewer_prompt"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_review_cli.py::test_rubric_files_ship_as_package_data -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_cli.py::test_rubric_files_ship_as_package_data"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-10-27T22:35:41.830018+00:00",
+      "commit": "e497de4e309d6bf7872d87ede71675c02b64565b",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_review_cli.py::test_review_cli_has_tests_and_panel_subcommands": 1,
+            "pytest:tests/test_review_cli.py::test_review_cli_without_a_subcommand_or_ticket_exits_with_usage": 1,
+            "pytest:tests/test_review_cli.py::test_every_rubric_item_reaches_the_reviewer_prompt": 1,
+            "pytest:tests/test_review_cli.py::test_rubric_files_ship_as_package_data": 1,
+            "pytest:tests/test_test_review.py::test_reviewer_runs_as_a_new_claude_process_given_only_the_spec_and_tests": 1,
+            "pytest:tests/test_test_review.py::test_reviewer_prompt_holds_the_spec_tests_and_rubric_and_nothing_else": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "e497de4e309d6bf7872d87ede71675c02b64565b",
+      "dirty": true,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "9.0.3",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2",
+      "bandit": "1.9.4",
+      "mutmut": "3.8.0"
+    }
+  }
+}

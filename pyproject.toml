@@ -11,6 +11,9 @@ dependencies = ["PyYAML>=6.0"]
 [tool.setuptools]
 packages = ["edad"]
 
+[tool.setuptools.package-data]
+edad = ["rubrics/*.md"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
