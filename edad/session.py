@@ -140,7 +140,8 @@ def preflight(  # noqa: PLR0913  # the run's five knobs, passed through; not fiv
     if not (root / ".edad" / "hashes" / f"{ticket['id']}.json").exists():
         raise Abort(
             "no approval lock; run 'approve-criteria <ticket>' then "
-            "'python3 -m edad.review tests <ticket>', or 'override-review'"
+            "'python3 -m edad.review tests <ticket>' (a pass runs approve), or "
+            "'override-review <ticket>' then 'python3 -m edad.gate approve <ticket>'"
         )
 
     ok, problems = check_freeze(root, ticket)

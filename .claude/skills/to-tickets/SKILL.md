@@ -311,7 +311,7 @@ approval, and `_edad.approved_at` is its timestamp. A ticket that claimed its ow
    `edad.gate approve` itself.
 3. On a failed round, revise the tests, or dispute findings by id with
    `--dispute F3="reason"` (repeatable), then run it again.
-4. After three failed rounds, change the ticket and ask the operator for
+4. After three rounds, change the ticket and ask the operator for
    `approve-criteria` again, or for `override-review`.
 5. If a round passes but `edad.gate approve` then fails, re-run plain
    `python3 -m edad.gate approve <T>`. The pass is already recorded; re-reviewing
