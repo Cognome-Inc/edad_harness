@@ -12,7 +12,8 @@ T036 adds, or None when the session ended before the panel ran:
         "fixed": [finding, ...],          # confirmed and fixed overnight
         "dismissed": [finding, ...],      # refuted by the disprover, each with a "reason" (D10)
         "nits": [finding, ...],
-        "mutation_score": {"killed": int, "total": int, "survivors": [str, ...]} | None,  # D3
+        "mutation_score": {"killed": int, "total": int, "survivors": [str, ...],
+                           "partial": bool} | None,  # D3; partial = the ten-minute stop (D16)
     }
     finding = {"item": "C3", "severity": "major", "issue": "..."}
 
@@ -57,6 +58,7 @@ NIGHT = [
             mutation_score={
                 "killed": 7, "total": 9,
                 "survivors": ["edad.review.render__mutmut_3", "edad.review.render__mutmut_8"],
+                "partial": True,
             },
             dismissed=[
                 finding("C3", "major", "empty list crashes the loop",
@@ -74,7 +76,7 @@ NIGHT = [
     {   # passed with an unfixed major
         "ticket": "T051", "outcome": "passed", "abort_reason": None,
         "panel": panel(
-            mutation_score={"killed": 5, "total": 5, "survivors": []},
+            mutation_score={"killed": 5, "total": 5, "survivors": [], "partial": False},
             unfixed=[finding("C1", "major", "off-by-one drops the last ticket")],
             nits=[finding("C4", "nit", "docstring says queue, means session")],
         ),
@@ -175,14 +177,22 @@ def test_needs_you_lists_the_panel_skip_then_failed_tickets_then_unfixed_majors(
 
 
 def test_test_strength_shows_each_tickets_mutation_score_and_its_survivors():
-    # D20 "Test strength" (D3: survivors reach the notes)
+    # D20 "Test strength" (D3: survivors reach the notes; D16: a stopped run says partial)
     page = notes()
     _, body = sections(page)
     lines = body["Test strength"]
-    assert re.search(r"\b7 ?/ ?9\b", lines[line_index(lines, "T050")])
-    assert re.search(r"\b5 ?/ ?5\b", lines[line_index(lines, "T051")])
-    assert where(page, "edad.review.render__mutmut_3") == ["Test strength"]
-    assert where(page, "edad.review.render__mutmut_8") == ["Test strength"]
+    t050 = line_index(lines, "T050")
+    t051 = line_index(lines, "T051")
+    assert re.search(r"\b7 ?/ ?9\b", lines[t050])
+    assert "partial" in lines[t050]
+    assert re.search(r"\b5 ?/ ?5\b", lines[t051])
+    assert "partial" not in lines[t051]
+    for survivor in ("edad.review.render__mutmut_3", "edad.review.render__mutmut_8"):
+        assert t050 < line_index(lines, survivor) < t051, "a survivor sits under its ticket"
+        assert where(page, survivor) == ["Test strength"]
+    # no score was measured for these, so none may be shown
+    for ticket in ("T052", "T053", "T054"):
+        assert not any(ticket in line and re.search(r"\d ?/ ?\d", line) for line in lines)
 
 
 def test_dismissed_findings_are_listed_each_with_its_own_reason():
@@ -190,12 +200,13 @@ def test_dismissed_findings_are_listed_each_with_its_own_reason():
     page = notes()
     _, body = sections(page)
     lines = body["Dismissed findings"]
-    line_index(lines, "empty list crashes the loop", "the caller filters empty lists first")
-    line_index(lines, "path from the log is not checked",
+    line_index(lines, "T050", "empty list crashes the loop", "the caller filters empty lists first")
+    line_index(lines, "T050", "path from the log is not checked",
                "the log is written by the harness itself")
     assert where(page, "empty list crashes the loop") == ["Dismissed findings"]
     assert where(page, "the caller filters empty lists first") == ["Dismissed findings"]
     assert where(page, "path from the log is not checked") == ["Dismissed findings"]
+    assert where(page, "the log is written by the harness itself") == ["Dismissed findings"]
 
 
 def test_fixed_overnight_lists_the_findings_the_fix_rounds_closed():
