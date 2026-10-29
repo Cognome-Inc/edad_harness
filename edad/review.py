@@ -9,6 +9,7 @@ inside the verifier.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -70,13 +71,39 @@ def reviewer_argv(prompt: str) -> list[str]:
     return ["claude", "-p", prompt, "--system-prompt", REVIEWER_SYSTEM_PROMPT, "--tools", ""]
 
 
+REVIEWER_TIMEOUT = 900
+PROJECT_MARKERS = (".git", "CLAUDE.md")
+
+
 def run_reviewer(argv: list[str]) -> str:
     """Launch the reviewer in a fresh empty directory outside any project, so
-    `claude` finds no CLAUDE.md, git status or memory; the directory is deleted
-    when the process exits. Return what it printed. A reviewer that exits
+    `claude` finds no project CLAUDE.md, git status or memory (a user-level
+    `~/.claude/CLAUDE.md` still loads from any directory, like the injections
+    `reviewer_argv` admits); the directory is deleted when the process exits.
+    Stdin is closed so the caller cannot pipe text in, and output is read as
+    UTF-8. Return what it printed. A reviewer that cannot run, hangs or exits
     non-zero judged nothing: refuse, so no round is used up."""
     with tempfile.TemporaryDirectory(prefix="edad-reviewer-") as empty:
-        proc = subprocess.run(argv, capture_output=True, text=True, check=False, cwd=empty)
+        here = Path(empty).resolve()
+        for d in (here, *here.parents):
+            for marker in PROJECT_MARKERS:
+                if (d / marker).exists():
+                    gate.die(
+                        f"the reviewer's temp directory {here} is inside a project "
+                        f"({d / marker} exists); fix TMPDIR; no round recorded"
+                    )
+        try:
+            proc = subprocess.run(
+                argv, capture_output=True, text=True, encoding="utf-8", check=False,
+                cwd=empty, stdin=subprocess.DEVNULL, timeout=REVIEWER_TIMEOUT,
+            )
+        except FileNotFoundError:
+            gate.die(f"cannot launch the reviewer: {argv[0]!r} not found; no round recorded")
+        except subprocess.TimeoutExpired:
+            gate.die(
+                f"the reviewer did not finish within {REVIEWER_TIMEOUT} seconds; "
+                "no round recorded"
+            )
     if proc.returncode != 0:
         gate.die(f"the reviewer exited {proc.returncode}; no round recorded: {proc.stderr.strip()}")
     return proc.stdout
@@ -125,7 +152,7 @@ def parse_findings(text: str) -> list[dict] | None:
 def parse_disputes(raw: list[str], last: dict | None) -> list[dict]:
     """Each `F<n>=reason` against the last round's findings; refuses on any bad one."""
     if raw and last is None:
-        gate.die("--dispute given before any round has run; there is no finding to dispute")
+        gate.die("--dispute given but no round ran under the current criteria; nothing to dispute")
     known = {f["id"]: f for f in (last or {}).get("findings", [])}
     out = []
     for item in raw:
@@ -156,8 +183,19 @@ def cmd_tests(args: argparse.Namespace) -> int:
             f"run `approve-criteria {tid}` at a terminal"
         )
     fingerprint = criteria["sha256"]
-    record = gate.read_record(root, tid, "review") or {}
-    all_rounds = record.get("rounds") if isinstance(record.get("rounds"), list) else []
+    frozen = ticket.get("frozen") or []
+    if not frozen:
+        gate.die("ticket declares no frozen files; nothing to approve")
+    record = gate.read_record(root, tid, "review")
+    if gate.hash_record_path(root, tid, "review").exists() and (
+        record is None or not isinstance(record.get("rounds"), list)
+    ):
+        gate.die(
+            f"{tid}.review.json is unreadable or malformed; refusing to overwrite the "
+            "round history; no round recorded"
+        )
+    record = record or {}
+    all_rounds = record.get("rounds") or []
     counted = [r for r in all_rounds if isinstance(r, dict) and r.get("criteria") == fingerprint]
     if len(counted) >= MAX_ROUNDS:
         gate.die(
@@ -166,11 +204,12 @@ def cmd_tests(args: argparse.Namespace) -> int:
         )
     disputes = parse_disputes(args.dispute, counted[-1] if counted else None)
 
-    frozen = ticket.get("frozen") or []
     gate.die_on_missing_frozen(root, frozen)
     spec = (root / ticket["spec"]).read_text(encoding="utf-8")
+    contents = {rel: (root / rel).read_bytes() for rel in frozen}
+    hashes = {rel: hashlib.sha256(raw).hexdigest() for rel, raw in contents.items()}
     artifact = "\n\n".join(
-        f"--- {rel} ---\n{(root / rel).read_text(encoding='utf-8')}" for rel in frozen
+        f"--- {rel} ---\n{raw.decode('utf-8')}" for rel, raw in contents.items()
     )
     prompt = review_prompt(spec, artifact, load_rubric("tests"), disputes=disputes)
     argv = reviewer_argv(prompt)
@@ -185,7 +224,7 @@ def cmd_tests(args: argparse.Namespace) -> int:
         "round": number,
         "verdict": "pass" if passed else "fail",
         "model": model_of(argv),
-        "frozen": gate.frozen_hashes_now(root, ticket),
+        "frozen": hashes,
         "criteria": fingerprint,
         "findings": findings,
         "disputes": disputes,
