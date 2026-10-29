@@ -1,0 +1,129 @@
+{
+  "tests/test_morning_notes.py": "75c67031de2f087f8aad481beaf085584ff2c3e1f4491de6f36062d61a708e00",
+  "_edad": {
+    "approved_at": "2026-10-29T09:22:46.266563+00:00",
+    "ticket_sha256": "b083ee278086fca44e2d27bad51eb9a5f340410a5ae772594b7ea1d72f0af68e",
+    "decisions": [
+      "D20"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_morning_notes.py::test_morning_notes_open_with_a_title_naming_the_night_and_its_run_branch -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_morning_notes.py::test_morning_notes_open_with_a_title_naming_the_night_and_its_run_branch"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_morning_notes.py::test_morning_notes_put_needs_you_first_and_nits_last -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_morning_notes.py::test_morning_notes_put_needs_you_first_and_nits_last"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_morning_notes.py::test_morning_notes_keep_every_section_when_the_night_has_nothing_to_report -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_morning_notes.py::test_morning_notes_keep_every_section_when_the_night_has_nothing_to_report"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_morning_notes.py::test_needs_you_lists_the_panel_skip_then_failed_tickets_then_unfixed_majors -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_morning_notes.py::test_needs_you_lists_the_panel_skip_then_failed_tickets_then_unfixed_majors"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_morning_notes.py::test_test_strength_shows_each_tickets_mutation_score_and_its_survivors -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_morning_notes.py::test_test_strength_shows_each_tickets_mutation_score_and_its_survivors"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_morning_notes.py::test_test_strength_marks_a_mutation_run_stopped_at_ten_minutes_as_partial -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_morning_notes.py::test_test_strength_marks_a_mutation_run_stopped_at_ten_minutes_as_partial"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_morning_notes.py::test_test_strength_shows_a_score_of_zero_mutants_as_0_of_0 -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_morning_notes.py::test_test_strength_shows_a_score_of_zero_mutants_as_0_of_0"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_morning_notes.py::test_test_strength_shows_no_score_for_a_ticket_whose_mutation_score_was_not_measured -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_morning_notes.py::test_test_strength_shows_no_score_for_a_ticket_whose_mutation_score_was_not_measured"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_morning_notes.py::test_dismissed_findings_are_listed_each_with_its_own_reason -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_morning_notes.py::test_dismissed_findings_are_listed_each_with_its_own_reason"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_morning_notes.py::test_fixed_overnight_lists_the_findings_the_fix_rounds_closed -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_morning_notes.py::test_fixed_overnight_lists_the_findings_the_fix_rounds_closed"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_morning_notes.py::test_nits_are_grouped_under_their_ticket -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_morning_notes.py::test_nits_are_grouped_under_their_ticket"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-10-29T09:22:41.924529+00:00",
+      "commit": "dd02cc48a9c3aa7cb147a3dcf06cf7ca37f16b9e",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_morning_notes.py::test_morning_notes_open_with_a_title_naming_the_night_and_its_run_branch": 1,
+            "pytest:tests/test_morning_notes.py::test_morning_notes_put_needs_you_first_and_nits_last": 1,
+            "pytest:tests/test_morning_notes.py::test_morning_notes_keep_every_section_when_the_night_has_nothing_to_report": 1,
+            "pytest:tests/test_morning_notes.py::test_needs_you_lists_the_panel_skip_then_failed_tickets_then_unfixed_majors": 1,
+            "pytest:tests/test_morning_notes.py::test_test_strength_shows_each_tickets_mutation_score_and_its_survivors": 1,
+            "pytest:tests/test_morning_notes.py::test_test_strength_marks_a_mutation_run_stopped_at_ten_minutes_as_partial": 1,
+            "pytest:tests/test_morning_notes.py::test_test_strength_shows_a_score_of_zero_mutants_as_0_of_0": 1,
+            "pytest:tests/test_morning_notes.py::test_test_strength_shows_no_score_for_a_ticket_whose_mutation_score_was_not_measured": 1,
+            "pytest:tests/test_morning_notes.py::test_dismissed_findings_are_listed_each_with_its_own_reason": 1,
+            "pytest:tests/test_morning_notes.py::test_fixed_overnight_lists_the_findings_the_fix_rounds_closed": 1,
+            "pytest:tests/test_morning_notes.py::test_nits_are_grouped_under_their_ticket": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "dd02cc48a9c3aa7cb147a3dcf06cf7ca37f16b9e",
+      "dirty": false,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "9.0.3",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2",
+      "bandit": "1.9.4",
+      "mutmut": "3.8.0"
+    }
+  }
+}

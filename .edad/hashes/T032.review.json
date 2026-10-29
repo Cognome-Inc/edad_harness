@@ -1,0 +1,170 @@
+{
+  "rounds": [
+    {
+      "round": 1,
+      "verdict": "fail",
+      "model": null,
+      "frozen": {
+        "tests/test_morning_notes.py": "8e734388e6f47a21d140f1e11e49abe6938a734f597b01e4b715daf5580aa214"
+      },
+      "criteria": "d8138d16dd8c0ad5cb3ba4773bcc6c8278f5e7899a114647831fbde7deafe016",
+      "findings": [
+        {
+          "id": "F1",
+          "item": "T5",
+          "severity": "blocker",
+          "issue": "The module-level `from edad import review` fails at collection with ImportError if `edad/review.py` does not exist at this ticket's base. The spec lists it as new, and nothing in the file shows that an earlier ticket creates it. Every test would then fail on an import error rather than on missing `morning_notes` behaviour. Either confirm the ticket is blocked by one that creates `edad/review.py`, or import inside `notes()` so the red failure is the missing `morning_notes`."
+        },
+        {
+          "id": "F2",
+          "item": "T2",
+          "severity": "major",
+          "issue": "No test covers a partial mutation score. D16 and S10 say the ten-minute stop is reported as \"partial\", and story 19 wants the score in the notes. The documented `mutation_score` shape ({killed, total, survivors}) has no partial marker, and no test checks that Test strength distinguishes a partial score from a complete one."
+        },
+        {
+          "id": "F3",
+          "item": "T2",
+          "severity": "major",
+          "issue": "The `mutation_score: None` boundary is never asserted under Test strength. T052 and T053 have no score, and T054 has no panel at all. No test pins what Test strength shows for them, for example that they are omitted or marked 'not measured' rather than rendered as a fake '0/0' or crashing."
+        },
+        {
+          "id": "F4",
+          "item": "T4",
+          "severity": "nit",
+          "issue": "Mutation survivors are only checked to appear somewhere in Test strength, not attributed to T050. Dismissed findings are not tied to their ticket either. A writer that lists survivors or dismissals under the wrong ticket would still pass."
+        },
+        {
+          "id": "F5",
+          "item": "T4",
+          "severity": "nit",
+          "issue": "The dismissal reason 'the log is written by the harness itself' is not checked to be exclusive to Dismissed findings, unlike the other reason. The docstring claims every item lands in no other section."
+        },
+        {
+          "id": "F6",
+          "item": "T6",
+          "severity": "nit",
+          "issue": "The `pure` fixture patches only `subprocess.run` and `subprocess.Popen` on the subprocess module. A writer that bound `from subprocess import run` at import time, or wrote to an absolute path outside the cwd, would escape both purity checks."
+        }
+      ],
+      "disputes": [],
+      "malformed": false
+    },
+    {
+      "round": 2,
+      "verdict": "fail",
+      "model": null,
+      "frozen": {
+        "tests/test_morning_notes.py": "e952213bf934b752098335eb3582a72a53f53ddd824ee680683750fee0868aa5"
+      },
+      "criteria": "d8138d16dd8c0ad5cb3ba4773bcc6c8278f5e7899a114647831fbde7deafe016",
+      "findings": [
+        {
+          "id": "F1",
+          "item": "T2",
+          "severity": "major",
+          "issue": "No test covers the mutation-score boundary where `total` is 0. That happens when the changed source files yield no mutants, or the ten-minute stop hits before any mutant finishes. A writer that renders the score as a percentage (killed/total) would raise ZeroDivisionError and lose the whole morning page, and every Test strength fixture has total > 0, so nothing catches it. Add a session with `mutation_score={\"killed\": 0, \"total\": 0, \"survivors\": [], \"partial\": True}` and assert its line renders (e.g. `0/0` plus `partial`) without raising."
+        },
+        {
+          "id": "F2",
+          "item": "T3",
+          "severity": "nit",
+          "issue": "`test_morning_notes_put_needs_you_first_and_nits_last` and `test_morning_notes_keep_every_section_when_the_night_has_nothing_to_report` each also pin the exact title line (`# Night {DATE} - run branch {BRANCH}`). Neither test name mentions the title. A title wording change fails both section-order tests for a reason their names don't state. Move the title assertion into its own test."
+        }
+      ],
+      "disputes": [
+        {
+          "id": "F1",
+          "finding": {
+            "id": "F1",
+            "item": "T5",
+            "severity": "blocker",
+            "issue": "The module-level `from edad import review` fails at collection with ImportError if `edad/review.py` does not exist at this ticket's base. The spec lists it as new, and nothing in the file shows that an earlier ticket creates it. Every test would then fail on an import error rather than on missing `morning_notes` behaviour. Either confirm the ticket is blocked by one that creates `edad/review.py`, or import inside `notes()` so the red failure is the missing `morning_notes`."
+          },
+          "reason": "edad/review.py already exists at this ticket's base: T030 created it and is merged, and T032 is blocked_by T030. The module imports cleanly; the contract adds a stub morning_notes that returns an empty string, so all seven tests were measured failing on their own assertions at base, not on an import error."
+        }
+      ],
+      "malformed": false
+    },
+    {
+      "round": 3,
+      "verdict": "fail",
+      "model": null,
+      "frozen": {
+        "tests/test_morning_notes.py": "bdc625269298f2b8b6af72ca451f6a8464e190a8212dbf7553037afee26398ee"
+      },
+      "criteria": "d8138d16dd8c0ad5cb3ba4773bcc6c8278f5e7899a114647831fbde7deafe016",
+      "findings": [
+        {
+          "id": "F1",
+          "item": "T5",
+          "severity": "blocker",
+          "issue": "The file runs `from edad import review` at module level, and the spec lists `edad/review.py` as a new file in this ticket's scope. If the module does not exist at this ticket's base, the whole file fails at collection with an ImportError instead of each test failing on a missing or wrong `morning_notes`. Either the ticket must be blocked by a ticket that creates `edad/review.py`, or the lookup should be deferred so the red failure comes from the missing function, not the import."
+        },
+        {
+          "id": "F2",
+          "item": "T3",
+          "severity": "major",
+          "issue": "`test_test_strength_shows_each_tickets_mutation_score_and_its_survivors` checks five behaviours in one test: the score format, the partial flag on and off, survivors placed under their ticket, a 0/0 boundary not turned into a percentage, and no score shown for tickets without one (T052, T053, T054). A failure does not say which behaviour broke. The 0/0 boundary and the absent-score case should be separate tests."
+        }
+      ],
+      "disputes": [],
+      "malformed": false
+    },
+    {
+      "round": 1,
+      "verdict": "fail",
+      "model": null,
+      "frozen": {
+        "tests/test_morning_notes.py": "73dd25db81d6db5e9cba79ec68176c9c834319a7d77d9558a626ecef479d74be"
+      },
+      "criteria": "b50b899a404272a73689e37135c2d15ea596883593714e38f34c48f11cd512f0",
+      "findings": [
+        {
+          "id": "F1",
+          "item": "T4",
+          "severity": "major",
+          "issue": "test_test_strength_shows_each_tickets_mutation_score_and_its_survivors assumes T050's entry comes before T051's (`t050 < line_index(lines, survivor) < t051`). It also locates a ticket's line by its first mention. D20 and S7 set no ticket order inside a section, so a correct writer that lists tickets weakest score first, or sorts them otherwise, fails. It also never checks that a survivor sits under T050 rather than under some other ticket listed between them. Bound each survivor by the next ticket heading after T050, whatever that ticket is, not by T051."
+        },
+        {
+          "id": "F2",
+          "item": "T4",
+          "severity": "major",
+          "issue": "test_nits_are_grouped_under_their_ticket has the same unstated-order assumption: `t050 <= rename < t051` and `t051 <= docstring` require T050's group before T051's. D20 says only \"grouped by ticket\". The test also checks only the first line mentioning each ticket, so a nit placed under a later, unrelated ticket header could still pass. Check that each nit falls inside its own ticket's group, wherever that group sits, not in input order."
+        }
+      ],
+      "disputes": [],
+      "malformed": false
+    },
+    {
+      "round": 2,
+      "verdict": "pass",
+      "model": null,
+      "frozen": {
+        "tests/test_morning_notes.py": "75c67031de2f087f8aad481beaf085584ff2c3e1f4491de6f36062d61a708e00"
+      },
+      "criteria": "b50b899a404272a73689e37135c2d15ea596883593714e38f34c48f11cd512f0",
+      "findings": [
+        {
+          "id": "F1",
+          "item": "T6",
+          "severity": "nit",
+          "issue": "Every test except the empty-night one feeds the same module-level NIGHT list of nested dicts to review.morning_notes, and nothing copies it. If the writer changes its input in place (for example, pops panel['dismissed'] or sorts panel['nits']), the change carries into later tests. Those tests would then pass or fail depending on run order, and the failure would point at the wrong test. Pass copy.deepcopy(NIGHT) inside notes(), or assert that NIGHT is unchanged after each call."
+        },
+        {
+          "id": "F2",
+          "item": "T3",
+          "severity": "nit",
+          "issue": "test_needs_you_lists_the_panel_skip_then_failed_tickets_then_unfixed_majors checks three things: the order inside 'Needs you', that four separate texts appear in that section only, and that the clean ticket is left out. A failure in one of these hides the others, and the test name only describes the order. Split the 'only in Needs you' checks and the clean-ticket check into their own tests."
+        },
+        {
+          "id": "F3",
+          "item": "T1",
+          "severity": "nit",
+          "issue": "The title test pins the exact string '# Night <date> - run branch <branch>' and cites D20, but D20 and the S7 seam list only the five sections. Neither gives a title format. If the format comes from the grill record, the test should cite that source, or it should check only that the first line names the date and the run branch."
+        }
+      ],
+      "disputes": [],
+      "malformed": false
+    }
+  ]
+}
