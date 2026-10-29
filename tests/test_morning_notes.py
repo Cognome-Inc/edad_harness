@@ -21,6 +21,10 @@ The layout is the grill's: a title line, then exactly five sections in a fixed
 order, so the operator reads what needs them first. Each test feeds the same
 night and checks one section; every finding must land in its own section and in
 no other, so a writer that prints everything everywhere fails.
+
+`edad/review.py` is not new here: T030 created it (T032 is blocked by T030), and
+this ticket's contract adds a `morning_notes` stub returning "". The import
+below succeeds at base, and each test fails on its own assertion.
 """
 
 from __future__ import annotations
@@ -147,10 +151,14 @@ def notes(sessions=NIGHT):
     return page
 
 
+def test_morning_notes_open_with_a_title_naming_the_night_and_its_run_branch():
+    # D20: "# Night <date> - run branch <branch>" is the first line
+    assert notes().splitlines()[:1] == [f"# Night {DATE} - run branch {BRANCH}"]
+
+
 def test_morning_notes_put_needs_you_first_and_nits_last():
-    # D20: a title naming the night and its run branch, then the five sections in order
+    # D20: the five sections, in order
     page = notes()
-    assert page.splitlines()[:1] == [f"# Night {DATE} - run branch {BRANCH}"]
     order, _ = sections(page)
     assert order == SECTIONS
 
@@ -158,7 +166,6 @@ def test_morning_notes_put_needs_you_first_and_nits_last():
 def test_morning_notes_keep_every_section_when_the_night_has_nothing_to_report():
     # D20: the layout is fixed, so an empty night still has all five headings
     page = notes([])
-    assert page.splitlines()[:1] == [f"# Night {DATE} - run branch {BRANCH}"]
     order, _ = sections(page)
     assert order == SECTIONS
 
@@ -180,27 +187,46 @@ def test_needs_you_lists_the_panel_skip_then_failed_tickets_then_unfixed_majors(
     assert not any("T050" in line for line in lines), "a clean ticket needs nothing"
 
 
+def strength_lines():
+    _, body = sections(notes())
+    return body["Test strength"]
+
+
 def test_test_strength_shows_each_tickets_mutation_score_and_its_survivors():
-    # D20 "Test strength" (D3: survivors reach the notes; D16: a stopped run says partial)
+    # D20 "Test strength": killed/total per ticket, its survivors under it (D3)
     page = notes()
     _, body = sections(page)
     lines = body["Test strength"]
     t050 = line_index(lines, "T050")
     t051 = line_index(lines, "T051")
     assert re.search(r"\b7 ?/ ?9\b", lines[t050])
-    assert "partial" in lines[t050]
     assert re.search(r"\b5 ?/ ?5\b", lines[t051])
-    assert "partial" not in lines[t051]
     for survivor in ("edad.review.render__mutmut_3", "edad.review.render__mutmut_8"):
         assert t050 < line_index(lines, survivor) < t051, "a survivor sits under its ticket"
         assert where(page, survivor) == ["Test strength"]
-    # a 0/0 score is shown as it is, not divided into a percentage
-    t055 = lines[line_index(lines, "T055")]
-    assert re.search(r"\b0 ?/ ?0\b", t055)
-    assert "partial" in t055
-    # no score was measured for these, so none may be shown
-    for ticket in ("T052", "T053", "T054"):
-        assert not any(ticket in line and re.search(r"\d ?/ ?\d", line) for line in lines)
+
+
+def test_test_strength_marks_a_mutation_run_stopped_at_ten_minutes_as_partial():
+    # D20 "Test strength" (D16: the ten-minute stop is reported as partial)
+    lines = strength_lines()
+    assert "partial" in lines[line_index(lines, "T050")]
+    assert "partial" not in lines[line_index(lines, "T051")]
+
+
+def test_test_strength_shows_a_score_of_zero_mutants_as_0_of_0():
+    # D20 "Test strength": total 0 is shown as it is, not divided into a percentage
+    lines = strength_lines()
+    assert re.search(r"\b0 ?/ ?0\b", lines[line_index(lines, "T055")])
+
+
+def test_test_strength_shows_no_score_for_a_ticket_whose_mutation_score_was_not_measured():
+    # D20 "Test strength": mutation_score None (or no panel) gets no killed/total figure
+    lines = strength_lines()
+    scored = [
+        s["ticket"] for s in NIGHT
+        if any(s["ticket"] in line and re.search(r"\d ?/ ?\d", line) for line in lines)
+    ]
+    assert scored == ["T050", "T051", "T055"]
 
 
 def test_dismissed_findings_are_listed_each_with_its_own_reason():
