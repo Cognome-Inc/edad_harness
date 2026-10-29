@@ -208,6 +208,10 @@ test:
 - A dispute after a criteria reset is refused with "before any round has
   run", which is untrue. Reword it, for example "no round under the current
   criteria".
+- *(Added 2026-10-28, T040 post-build review.)* T040's `run_reviewer`
+  docstring says `claude` "finds no CLAUDE.md". It finds no *project*
+  CLAUDE.md: a user-level `~/.claude/CLAUDE.md` loads from any directory.
+  Say so, beside the other injections the `reviewer_argv` docstring admits.
 
 Unenforced because: these are prose and message wording, which the
 review-loops spec already lists as cheap to tune. A string-pinning test is
@@ -236,6 +240,75 @@ Scope: none (documentation via D35).
 Rejected: counting only failed rounds. That changes what the record's
 `round` means and needs a new frozen test for a case that arises only when
 tests are re-authored after lock.
+
+### Amendment (2026-10-28): T040's post-build review
+
+T040's three fresh reviewers (drift, craft, integration) found no drift, but
+three ways the caller can still reach or break the isolated reviewer. The
+operator chose to make them real decisions in T041, which already edits
+`run_reviewer`, rather than notes.
+
+### D37: the reviewer's stdin is closed
+
+`run_reviewer` launches `claude` with stdin closed (`stdin=subprocess.DEVNULL`).
+Today it inherits the caller's stdin, and `claude -p` reads piped stdin into
+its prompt. Measured 2026-10-28 with `claude` 2.1.280, from an empty temp dir
+with `--system-prompt` and `--tools ""`: a line piped in was quoted back word
+for word. The same call with stdin from `/dev/null` showed only what `claude`
+always injects. So `edad.review tests` run from a pipe or a script hands the
+reviewer whatever the caller pipes in, which is the kind of leak D30 closes.
+
+Verify:
+
+    python3 -m pytest tests/test_review_round_hardening.py::test_the_reviewer_cannot_read_the_callers_stdin -q
+
+Scope: `edad/review.py`.
+
+Rejected: leaving it to the operator not to pipe, since a script or a session
+runner pipes by default.
+
+### D38: the reviewer's output is read as UTF-8
+
+`run_reviewer` decodes the reviewer's output as UTF-8 (`encoding="utf-8"`),
+not with the locale's encoding. Under `LANG=C`, as on some CI images, a
+non-ASCII reply raises `UnicodeDecodeError` today. `load_rubric` already reads
+as UTF-8. T031's frozen `test_a_reviewer_that_fails_to_run_uses_up_no_round`
+returns real output only when `capture_output=True` and `text=True` are both
+passed, so `text=True` stays and `encoding` is added beside it.
+
+Verify:
+
+    python3 -m pytest tests/test_review_round_hardening.py::test_the_reviewers_output_is_read_as_utf8 -q
+
+Scope: `edad/review.py`.
+
+Rejected: `errors="replace"`, which turns a garbled reply into a
+plausible-looking one; a reply that isn't valid UTF-8 should stay a crash or a
+malformed round, not be quietly patched.
+
+### D39: a temp directory inside a project is refused
+
+D30's empty directory comes from the system temp location, which `TMPDIR`
+sets. If `TMPDIR` points inside a project, the reviewer starts inside it and
+`claude` loads that project again, with no error. `run_reviewer` therefore
+checks the directory it made and every directory above it for `.git` or
+`CLAUDE.md`, the same markers T040's frozen test uses. If it finds one, it
+refuses through `gate.die` before launching, naming what it found, and the
+directory is still removed. Nothing in the harness sets `TMPDIR`, and the
+night's container uses `/tmp`.
+
+Verify:
+
+    python3 -m pytest tests/test_review_round_hardening.py::test_a_temp_directory_inside_a_project_launches_no_reviewer -q
+
+Scope: `edad/review.py`.
+
+Rejected:
+
+- A fixed `dir=` of its own: there is no location that is outside every
+  project on every machine, and it would bypass the operator's `TMPDIR`.
+- `.claude/` as a marker: `~/.claude` is user-level and loads anyway, so a
+  `TMPDIR` under the home directory would be refused for nothing.
 
 ### Deferred
 
@@ -302,7 +375,7 @@ decisions:
       - edad/review.py
     rejected: move aside and start at round 1 — a reset by deletion, which D27 rejects
   - id: D35
-    decision: fix stale approve advice (next/SKILL.md:49-50, session.py:141), the to-tickets approval wording and 101-char line, document pass-then-approve-fails (re-run plain gate approve) and D36, and reword the dispute-after-reset refusal
+    decision: fix stale approve advice (next/SKILL.md:49-50, session.py:141), the to-tickets approval wording and 101-char line, document pass-then-approve-fails (re-run plain gate approve) and D36, reword the dispute-after-reset refusal, and say run_reviewer's docstring means no *project* CLAUDE.md
     unenforced: prose and message wording, already listed as cheap to tune; a string-pinning test is brittle; checked by the post-build review
     scope:
       - .claude/skills/next/SKILL.md
@@ -315,6 +388,33 @@ decisions:
     unenforced: declines to change T031's behaviour, which its frozen counter tests already pin for fail sequences; documented via D35
     scope: []
     rejected: count only failed rounds — changes what `round` means and needs a new frozen test for a case that arises only when tests are re-authored after lock
+  - id: D37
+    decision: run_reviewer launches claude with stdin closed (stdin=subprocess.DEVNULL), so input piped to `edad.review tests` cannot reach the reviewer
+    verify:
+      - python3 -m pytest tests/test_review_round_hardening.py::test_the_reviewer_cannot_read_the_callers_stdin -q
+    frozen:
+      - tests/test_review_round_hardening.py
+    scope:
+      - edad/review.py
+    rejected: leave it to the operator not to pipe — scripts and session runners pipe by default
+  - id: D38
+    decision: run_reviewer decodes the reviewer's output as UTF-8 (encoding="utf-8" beside T031's capture_output=True, text=True), not the locale's encoding
+    verify:
+      - python3 -m pytest tests/test_review_round_hardening.py::test_the_reviewers_output_is_read_as_utf8 -q
+    frozen:
+      - tests/test_review_round_hardening.py
+    scope:
+      - edad/review.py
+    rejected: errors="replace" — quietly patches a garbled reply into a plausible one
+  - id: D39
+    decision: run_reviewer refuses (gate.die, before any launch, naming what it found) when its temp directory or any directory above it holds .git or CLAUDE.md; the directory is still removed
+    verify:
+      - python3 -m pytest tests/test_review_round_hardening.py::test_a_temp_directory_inside_a_project_launches_no_reviewer -q
+    frozen:
+      - tests/test_review_round_hardening.py
+    scope:
+      - edad/review.py
+    rejected: a fixed dir= of its own — nowhere is outside every project on every machine, and it bypasses TMPDIR; .claude/ as a marker — ~/.claude is user-level and loads anyway
 deferred:
   - trigger field in the shared reviewer output format — T034 owns D14; extra keys are allowed and ignored, so adding it later breaks no record
   - cmd_tests's criteria check duplicates gate.review_problems' — a shared helper needs gate.py in scope
@@ -338,3 +438,17 @@ existing function.
 - T041 throwaway (+35 lines): all green, suite 335 passed.
 - The live canary gained a control test beyond D31's wording: without it, a
   `claude` that stopped loading CLAUDE.md would make the canary pass vacuously.
+
+## Re-probe (2026-10-28, after T040 merged, main 5d77df4)
+
+T041's five tests were re-run at the new base: all five still FAILED on the same
+assertions. D37–D39's three tests were added to the same frozen file. At base
+all three FAILED on assertions: stdin not closed (`[False]`); output decoded
+with the locale's encoding (`None`); a temp dir inside a project launched and
+recorded a round. Full suite at base: 8 failed (exactly T041's), 330 passed.
+
+Throwaway fix for all of T041 (`edad/review.py`, +42/−10): all 8 green, full
+suite 338 passed, ruff clean, live canary 2 passed. The first throwaway
+dropped `text=True` for `encoding="utf-8"` and broke T031's frozen
+`test_a_reviewer_that_fails_to_run_uses_up_no_round`, whose fake returns
+output only with `text=True` (hence D38's wording).
