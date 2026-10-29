@@ -145,6 +145,21 @@ def line_index(lines, *parts):
     raise AssertionError(f"no line contains all of {parts!r}:\n" + "\n".join(lines))
 
 
+def owner(lines, text):
+    """The ticket a line sits under: the nearest line at or above it naming one.
+
+    Whatever order the writer lists tickets in, an item belongs to the ticket
+    whose line comes last before it.
+    """
+    tickets = [s["ticket"] for s in NIGHT]
+    for line in reversed(lines[: line_index(lines, text) + 1]):
+        named = [t for t in tickets if t in line]
+        if named:
+            assert len(named) == 1, f"one line names two tickets: {line!r}"
+            return named[0]
+    raise AssertionError(f"{text!r} sits under no ticket:\n" + "\n".join(lines))
+
+
 def notes(sessions=NIGHT):
     page = review.morning_notes(DATE, BRANCH, sessions)
     assert isinstance(page, str)
@@ -197,12 +212,10 @@ def test_test_strength_shows_each_tickets_mutation_score_and_its_survivors():
     page = notes()
     _, body = sections(page)
     lines = body["Test strength"]
-    t050 = line_index(lines, "T050")
-    t051 = line_index(lines, "T051")
-    assert re.search(r"\b7 ?/ ?9\b", lines[t050])
-    assert re.search(r"\b5 ?/ ?5\b", lines[t051])
+    assert re.search(r"\b7 ?/ ?9\b", lines[line_index(lines, "T050")])
+    assert re.search(r"\b5 ?/ ?5\b", lines[line_index(lines, "T051")])
     for survivor in ("edad.review.render__mutmut_3", "edad.review.render__mutmut_8"):
-        assert t050 < line_index(lines, survivor) < t051, "a survivor sits under its ticket"
+        assert owner(lines, survivor) == "T050"
         assert where(page, survivor) == ["Test strength"]
 
 
@@ -256,14 +269,7 @@ def test_nits_are_grouped_under_their_ticket():
     page = notes()
     _, body = sections(page)
     lines = body["Nits"]
-    t050 = line_index(lines, "T050")
-    t051 = line_index(lines, "T051")
-    rename = line_index(lines, "rename tmp to scratch")
-    helpers = line_index(lines, "two helpers could be one")
-    docstring = line_index(lines, "docstring says queue, means session")
-    assert t050 <= rename < t051
-    assert t050 <= helpers < t051
-    assert t051 <= docstring
-    for nit in ("rename tmp to scratch", "two helpers could be one",
-                "docstring says queue, means session"):
+    for nit, ticket in (("rename tmp to scratch", "T050"), ("two helpers could be one", "T050"),
+                        ("docstring says queue, means session", "T051")):
+        assert owner(lines, nit) == ticket
         assert where(page, nit) == ["Nits"]
