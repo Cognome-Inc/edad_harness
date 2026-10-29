@@ -46,8 +46,8 @@ The pipeline, and what enters and leaves each step:
 | … that touches legacy code                 | `/find-seams` first, then `/grill-me`             |
 | a grill record with no spec                | `/to-spec`                                        |
 | a spec with no tickets                     | `/to-tickets`                                     |
-| a ticket with no lock                      | read it; `python3 -m edad.gate approve T0NN`      |
-| a lock the ticket has drifted from         | `python3 -m edad.gate approve T0NN` again         |
+| a ticket with no lock                      | read it; `approve-criteria T0NN`, then `python3 -m edad.review tests T0NN` (or `override-review`, then `python3 -m edad.gate approve T0NN`) |
+| a lock the ticket has drifted from         | `approve-criteria T0NN`, then `python3 -m edad.review tests T0NN` again (or `override-review`, then `python3 -m edad.gate approve T0NN`) |
 | a locked ticket never run                  | `python3 -m edad.session run T0NN [--sandbox docker]`, or queue a night: `python3 -m edad.session_queue run T0NN T0NM …` |
 | a session `aborted` or `unwinnable`        | fix the contract — ticket or frozen tests — never the branch; re-approve; re-run |
 | evidence not on mainline                   | `/review-branch T0NN`, then PR and merge (human)   |

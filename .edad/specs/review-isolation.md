@@ -27,6 +27,16 @@ T031's post-build review also found four weak spots in the review round:
 - A ticket with no frozen files launches a reviewer on nothing and spends a
   round that approve will then refuse anyway.
 
+T040's own post-build review then found three ways the caller can still reach
+or break the isolated reviewer:
+
+- It inherits the caller's stdin, and `claude -p` reads piped stdin into its
+  prompt (measured 2026-10-28).
+- Its output is decoded with the locale's encoding, so a non-ASCII reply
+  crashes under `LANG=C`.
+- Its empty directory comes from `TMPDIR`, so a `TMPDIR` inside a project puts
+  it back inside that project, silently.
+
 Some advice in the skills and session messages is also stale since T029. It
 still tells the operator to run plain `approve` on an unlocked ticket, and that
 is now refused without a review.
@@ -45,13 +55,16 @@ reviewer that could not run, whether the binary is missing, it timed out after
 900 s, or there was nothing to review, spends no round and writes nothing. A
 corrupt review record stops the command instead of being overwritten.
 
+The reviewer's stdin is closed, its output is read as UTF-8, and a temp
+directory that turns out to be inside a project is refused before launch.
+
 A separate, later ticket corrects the stale advice and documents two behaviours
 the operator needs to know about. First, a pass still counts toward the three
 rounds. Second, when a round passes but approve fails, re-run plain approve
 rather than re-reviewing.
 
 The work splits into **T040** (isolation, D30–D31), which must land before
-T032's real test review, and **T041** (hardening and docs, D32–D36), which is
+T032's real test review, and **T041** (hardening and docs, D32–D39), which is
 blocked by T040 only because both edit the same module.
 
 ## User stories
@@ -78,6 +91,9 @@ blocked by T040 only because both edit the same module.
    that actually work since T029, so that I'm not sent to a refused `approve`.
 9. As a ticket author whose round passed but whose approve then failed, I want
    to be told to re-run plain approve, so that I don't spend another round.
+10. As the operator, I want the reviewer sealed off from how I launch it (what
+    I pipe in, my locale, my `TMPDIR`), so that isolation holds from a script
+    or a CI job as well as from my terminal.
 
 ## Seams
 
@@ -102,8 +118,10 @@ named as in the review-loops spec), driven through T031's `run=` hook. The real
     that edits a frozen file mid-call shows which bytes were hashed;
   - the exit code and whether anything was written when the fake raises
     `FileNotFoundError` or `TimeoutExpired`, when the ticket has no frozen
-    files, or when the record on disk is corrupt.
-- **Discharges**: D30 (empty-directory half), D32, D33, D34.
+    files, or when the record on disk is corrupt;
+  - the `stdin` and `encoding` the reviewer process is given, and whether it
+    launches at all when the temp location is inside a project.
+- **Discharges**: D30 (empty-directory half), D32, D33, D34, D37, D38, D39.
 
 **L1 — live reviewer canary** (the real `review.run_reviewer` against the real
 `claude`, from inside a temp git project with a planted word)
@@ -146,6 +164,10 @@ any `claude` upgrade.
   with no frozen files (using approve's own message) and a corrupt record
   (naming the file). They join T031's "non-zero exit spends no round" rule, and
   none of them writes anything.
+- **The launch is sealed off from the caller** (D37–D39, added after T040's
+  post-build review). Stdin is closed, output is decoded as UTF-8 beside
+  T031's `text=True`, and the temp directory is checked for `.git` or
+  `CLAUDE.md` in it or above it before anything launches.
 - **Corrupt and missing records are told apart** in the review command by
   whether the record path exists, since the gate's record reader returns
   nothing for both. Approve's reader is deliberately unchanged: there a corrupt
@@ -252,7 +274,7 @@ decisions:
     seam: S5 test-review round
     rejected: move aside and start at round 1 — a reset by deletion, which D27 rejects
   - id: D35
-    decision: fix stale approve advice (next/SKILL.md:49-50, session.py:141), the to-tickets approval wording and 101-char line, document pass-then-approve-fails (re-run plain gate approve) and D36, and reword the dispute-after-reset refusal
+    decision: fix stale approve advice (next/SKILL.md:49-50, session.py:141), the to-tickets approval wording and 101-char line, document pass-then-approve-fails (re-run plain gate approve) and D36, reword the dispute-after-reset refusal, and say run_reviewer's docstring means no *project* CLAUDE.md
     unenforced: prose and message wording, already listed as cheap to tune; a string-pinning test is brittle; checked by the post-build review
     scope:
       - .claude/skills/next/SKILL.md
@@ -267,6 +289,36 @@ decisions:
     scope: []
     seam: none — unenforced
     rejected: count only failed rounds — changes what `round` means and needs a new frozen test for a case that arises only when tests are re-authored after lock
+  - id: D37
+    decision: run_reviewer launches claude with stdin closed (stdin=subprocess.DEVNULL), so input piped to `edad.review tests` cannot reach the reviewer
+    verify:
+      - python3 -m pytest tests/test_review_round_hardening.py::test_the_reviewer_cannot_read_the_callers_stdin -q
+    frozen:
+      - tests/test_review_round_hardening.py
+    scope:
+      - edad/review.py
+    seam: S5 test-review round
+    rejected: leave it to the operator not to pipe — scripts and session runners pipe by default
+  - id: D38
+    decision: run_reviewer decodes the reviewer's output as UTF-8 (encoding="utf-8" beside T031's capture_output=True, text=True), not the locale's encoding
+    verify:
+      - python3 -m pytest tests/test_review_round_hardening.py::test_the_reviewers_output_is_read_as_utf8 -q
+    frozen:
+      - tests/test_review_round_hardening.py
+    scope:
+      - edad/review.py
+    seam: S5 test-review round
+    rejected: errors="replace" — quietly patches a garbled reply into a plausible one
+  - id: D39
+    decision: run_reviewer refuses (gate.die, before any launch, naming what it found) when its temp directory or any directory above it holds .git or CLAUDE.md; the directory is still removed
+    verify:
+      - python3 -m pytest tests/test_review_round_hardening.py::test_a_temp_directory_inside_a_project_launches_no_reviewer -q
+    frozen:
+      - tests/test_review_round_hardening.py
+    scope:
+      - edad/review.py
+    seam: S5 test-review round
+    rejected: a fixed dir= of its own — nowhere is outside every project on every machine, and it bypasses TMPDIR; .claude/ as a marker — ~/.claude is user-level and loads anyway
 deferred:
   - trigger field in the shared reviewer output format — T034 owns D14; extra keys are allowed and ignored, so adding it later breaks no record
   - cmd_tests's criteria check duplicates gate.review_problems' — a shared helper needs gate.py in scope

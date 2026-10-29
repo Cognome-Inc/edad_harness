@@ -1,0 +1,79 @@
+{
+  "rounds": [
+    {
+      "round": 1,
+      "verdict": "fail",
+      "model": null,
+      "frozen": {
+        "tests/test_review_round_hardening.py": "b6acf9903b52bf7ceace99498de79e002a24716cd41c88e66e31c2cca7edd552"
+      },
+      "criteria": "5aeae8486da86729956145f44e342a3e28b52e00e91951f384d303c605500da3",
+      "findings": [
+        {
+          "id": "F1",
+          "item": "T6",
+          "severity": "major",
+          "issue": "Six tests let the real `run_reviewer` create its temp directory from the host's real TMPDIR: D32 does not, but the D33 missing-binary and timeout tests, D37 and D38 do, and the D33 no-frozen-files and D34 tests do not reach it. After D39, `run_reviewer` refuses whenever that location, or any directory above it, holds `.git` or `CLAUDE.md`. So these tests pass or fail depending on the machine. Where TMPDIR sits inside a workspace or repo, as is common in CI and possible in the night's sandbox, the D37 and D38 tests get exit 2 with no launch, and the D33 tests fail on `timeouts` or on the error text. Each should point `tempfile.tempdir` at a fixture directory known to be outside any project, as the D39 test already does."
+        },
+        {
+          "id": "F2",
+          "item": "T4",
+          "severity": "major",
+          "issue": "In `test_a_temp_directory_inside_a_project_launches_no_reviewer`, the CLAUDE.md case builds its repo at `tmp_path / \"CLAUDE.md\"` because `marker.strip(\".\")` leaves `CLAUDE.md` unchanged. Every path in that case, including the temp directory, therefore contains the string `CLAUDE.md`. Any refusal message that prints the temp path passes `marker in err`, so the 'naming what it found' check does nothing for this case. The directory named CLAUDE.md under `tmp_path` also plants a second marker one level up, so the test cannot tell which level was detected. The repo should use a neutral name, such as `tmp_path / f\"case{i}\"`."
+        }
+      ],
+      "disputes": [],
+      "malformed": false
+    },
+    {
+      "round": 2,
+      "verdict": "fail",
+      "model": null,
+      "frozen": {
+        "tests/test_review_round_hardening.py": "5dae17599290cd36ca56e551b87afacecf5814476b553578887272cc4f91e475"
+      },
+      "criteria": "5aeae8486da86729956145f44e342a3e28b52e00e91951f384d303c605500da3",
+      "findings": [
+        {
+          "id": "F1",
+          "item": "T6",
+          "severity": "major",
+          "issue": "The autouse `outside_projects` fixture prefers `tmp_path` as the temp base, so the reviewer's temp location becomes `tmp_path/edad-t041-*`. But `make_repo(tmp_path)` also uses `tmp_path` as the repo root in the D33 missing-binary and timeout tests, the D37 test and the D38 test. In those tests the reviewer's 'fresh empty directory' therefore sits inside the repo (EDAD_REPO). D30 requires a directory outside the repo. An implementation that enforces that, for example by refusing a temp dir under EDAD_REPO, would fail these tests for a reason unrelated to the decision under test. Put the repo and the temp base in sibling directories, e.g. `tmp_path/repo` and `tmp_path/tmp`."
+        },
+        {
+          "id": "F2",
+          "item": "T6",
+          "severity": "major",
+          "issue": "The tests that run the real `run_reviewer` fake only `subprocess.run` and leave PATH alone: the D33 timeout test, D37 and D38. Suppose `claude` is absent from the host's PATH, as in the night sandbox, and the implementation checks for the binary with `shutil.which` before launching, which D33 permits. The missing-binary path then fires instead. The tests would see exit 2 and an empty `timeouts`/`stdins`/`encodings` and fail for a reason that has nothing to do with stdin, encoding or timeout. Either pin PATH to a directory holding a stub `claude`, or patch `shutil.which`, so the result does not depend on the machine."
+        }
+      ],
+      "disputes": [],
+      "malformed": false
+    },
+    {
+      "round": 3,
+      "verdict": "pass",
+      "model": null,
+      "frozen": {
+        "tests/test_review_round_hardening.py": "0c3ebdd9053877016ffd984b1e1394f46585511c8f70cddfd60dcdb7a940df22"
+      },
+      "criteria": "5aeae8486da86729956145f44e342a3e28b52e00e91951f384d303c605500da3",
+      "findings": [
+        {
+          "id": "F1",
+          "item": "T2",
+          "severity": "nit",
+          "issue": "test_the_reviewer_cannot_read_the_callers_stdin accepts `kwargs.get('input') is not None` as well as stdin=DEVNULL. An implementation that forwards the caller's stdin through `input=sys.stdin.read()` would pass, yet it breaks D37's intent and its decided mechanism (stdin=subprocess.DEVNULL)."
+        },
+        {
+          "id": "F2",
+          "item": "T2",
+          "severity": "nit",
+          "issue": "test_the_reviewers_output_is_read_as_utf8 does not rule out the alternative D38 rejected. `encoding='utf-8', errors='replace'` passes because the reply is valid UTF-8 and `errors` is never checked. A garbled reply would then be quietly patched into a plausible one, which D38 rejects."
+        }
+      ],
+      "disputes": [],
+      "malformed": false
+    }
+  ]
+}

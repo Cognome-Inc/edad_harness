@@ -296,8 +296,9 @@ diff touches nothing outside `scope`.
 
 State for each ticket: its id, what it makes work, its blockers, the decision ids it
 discharges, and the exact command that decides it. Then confirm with the user before
-asking the operator for `approve-criteria`. Approval hashes the acceptance tests *and the ticket file
-itself* into the lock, so `scope`, `acceptance`, `kill_conditions` and `decisions` are
+asking the operator for `approve-criteria`. The lock itself is written later, by
+`edad.gate approve`, once a review round has passed; it hashes the acceptance tests *and the
+ticket file itself*, so `scope`, `acceptance`, `kill_conditions` and `decisions` are
 part of the contract too — editing any of them afterwards fails the freeze check until
 you re-approve. Nothing records approval inside the ticket: the lock's existence is the
 approval, and `_edad.approved_at` is its timestamp. A ticket that claimed its own
@@ -310,5 +311,12 @@ approval, and `_edad.approved_at` is its timestamp. A ticket that claimed its ow
    `edad.gate approve` itself.
 3. On a failed round, revise the tests, or dispute findings by id with
    `--dispute F3="reason"` (repeatable), then run it again.
-4. After three failed rounds, change the ticket and ask the operator for
+4. After three rounds, change the ticket and ask the operator for
    `approve-criteria` again, or for `override-review`.
+5. If a round passes but `edad.gate approve` then fails, re-run plain
+   `python3 -m edad.gate approve <T>`. The pass is already recorded; re-reviewing
+   would spend a round.
+6. A pass keeps counting: every round under the current criteria, passes included,
+   counts toward the three. A ticket that passed on round 3 and later has its tests
+   re-authored under unchanged criteria gets no more rounds; a person decides, via
+   `approve-criteria` over changed criteria or `override-review`.
