@@ -243,8 +243,67 @@ def cmd_tests(args: argparse.Namespace) -> int:
 
 
 def morning_notes(date: str, run_branch: str, sessions: list[dict]) -> str:
-    """STUB (T032 contract): the night's act-first Markdown page (D20)."""
-    return ""
+    """The night's act-first Markdown page (D20). Pure: returns text, writes nothing."""
+
+    def section(title: str, lines: list[str]) -> list[str]:
+        return ["", f"## {title}", "", *(lines or ["Nothing."])]
+
+    def panel_of(s: dict) -> dict:
+        return s.get("panel") or {}
+
+    def by_ticket(key: str) -> list[str]:
+        """Per ticket a header line, then one bullet per finding under it."""
+        out: list[str] = []
+        for s in sessions:
+            found = panel_of(s).get(key) or []
+            if found:
+                out.append(f"- {s['ticket']}")
+                out.extend(f"  - [{f['item']}, {f['severity']}] {f['issue']}" for f in found)
+        return out
+
+    needs: list[str] = []
+    for s in sessions:
+        if panel_of(s).get("skipped"):
+            needs.append(f"- {s['ticket']}: review panel skipped")
+    for s in sessions:
+        if s["outcome"] != "passed":
+            line = f"- {s['ticket']}: {s['outcome']}"
+            if s.get("abort_reason"):
+                line += f" - {s['abort_reason']}"
+            needs.append(line)
+    for s in sessions:
+        for f in panel_of(s).get("unfixed") or []:
+            needs.append(f"- {s['ticket']}: [{f['item']}, {f['severity']}] {f['issue']}")
+
+    strength: list[str] = []
+    for s in sessions:
+        score = panel_of(s).get("mutation_score")
+        if not score:
+            continue
+        line = f"- {s['ticket']}: {score['killed']}/{score['total']} killed"
+        if score.get("partial"):
+            line += " (partial: run stopped early)"
+        strength.append(line)
+        strength.extend(f"  - survivor: {m}" for m in score.get("survivors") or [])
+
+    dismissed = [
+        f"- {s['ticket']}: [{f['item']}, {f['severity']}] {f['issue']} - dismissed: {f['reason']}"
+        for s in sessions
+        for f in panel_of(s).get("dismissed") or []
+    ]
+    fixed = [
+        f"- {s['ticket']}: [{f['item']}, {f['severity']}] {f['issue']}"
+        for s in sessions
+        for f in panel_of(s).get("fixed") or []
+    ]
+
+    lines = [f"# Night {date} - run branch {run_branch}"]
+    lines += section("Needs you", needs)
+    lines += section("Test strength", strength)
+    lines += section("Dismissed findings", dismissed)
+    lines += section("Fixed overnight", fixed)
+    lines += section("Nits", by_ticket("nits"))
+    return "\n".join(lines) + "\n"
 
 
 def cmd_panel(args: argparse.Namespace) -> int:
