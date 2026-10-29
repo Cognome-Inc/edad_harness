@@ -1,0 +1,110 @@
+{
+  "tests/test_review_round_hardening.py": "0c3ebdd9053877016ffd984b1e1394f46585511c8f70cddfd60dcdb7a940df22",
+  "_edad": {
+    "approved_at": "2026-10-29T00:21:49.939795+00:00",
+    "ticket_sha256": "c79870e5cfeb1c2cd0799275ea0037e153a9b06ae71a4d3061223282072c07a8",
+    "decisions": [
+      "D32",
+      "D33",
+      "D34",
+      "D37",
+      "D38",
+      "D39"
+    ],
+    "red_proof": [
+      {
+        "command": "python3 -m pytest tests/test_review_round_hardening.py::test_a_round_records_the_bytes_the_reviewer_was_shown -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_round_hardening.py::test_a_round_records_the_bytes_the_reviewer_was_shown"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_review_round_hardening.py::test_a_missing_reviewer_binary_is_refused_and_spends_no_round -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_round_hardening.py::test_a_missing_reviewer_binary_is_refused_and_spends_no_round"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_review_round_hardening.py::test_a_reviewer_that_times_out_is_refused_and_spends_no_round -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_round_hardening.py::test_a_reviewer_that_times_out_is_refused_and_spends_no_round"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_review_round_hardening.py::test_a_ticket_with_no_frozen_files_launches_no_reviewer -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_round_hardening.py::test_a_ticket_with_no_frozen_files_launches_no_reviewer"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_review_round_hardening.py::test_a_corrupt_review_record_is_refused_and_left_alone -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_round_hardening.py::test_a_corrupt_review_record_is_refused_and_left_alone"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_review_round_hardening.py::test_the_reviewer_cannot_read_the_callers_stdin -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_round_hardening.py::test_the_reviewer_cannot_read_the_callers_stdin"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_review_round_hardening.py::test_the_reviewers_output_is_read_as_utf8 -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_round_hardening.py::test_the_reviewers_output_is_read_as_utf8"
+        ]
+      },
+      {
+        "command": "python3 -m pytest tests/test_review_round_hardening.py::test_a_temp_directory_inside_a_project_launches_no_reviewer -q",
+        "exit_code": 1,
+        "detected_by": [
+          "tests/test_review_round_hardening.py::test_a_temp_directory_inside_a_project_launches_no_reviewer"
+        ]
+      }
+    ],
+    "mutation_proof": null,
+    "full_gate_baseline": {
+      "taken_at": "2026-10-29T00:21:46.621820+00:00",
+      "commit": "14edaea5f084bdeff3a629a07cd73bf0f909468c",
+      "commands": {
+        "python3 -m pytest -q": {
+          "exit_code": 1,
+          "keys": {
+            "pytest:tests/test_review_round_hardening.py::test_a_round_records_the_bytes_the_reviewer_was_shown": 1,
+            "pytest:tests/test_review_round_hardening.py::test_a_missing_reviewer_binary_is_refused_and_spends_no_round": 1,
+            "pytest:tests/test_review_round_hardening.py::test_a_reviewer_that_times_out_is_refused_and_spends_no_round": 1,
+            "pytest:tests/test_review_round_hardening.py::test_a_ticket_with_no_frozen_files_launches_no_reviewer": 1,
+            "pytest:tests/test_review_round_hardening.py::test_a_corrupt_review_record_is_refused_and_left_alone": 1,
+            "pytest:tests/test_review_round_hardening.py::test_the_reviewer_cannot_read_the_callers_stdin": 1,
+            "pytest:tests/test_review_round_hardening.py::test_the_reviewers_output_is_read_as_utf8": 1,
+            "pytest:tests/test_review_round_hardening.py::test_a_temp_directory_inside_a_project_launches_no_reviewer": 1
+          }
+        },
+        "ruff check .": {
+          "exit_code": 0,
+          "keys": {}
+        }
+      }
+    },
+    "harness": {
+      "version": null,
+      "commit": "14edaea5f084bdeff3a629a07cd73bf0f909468c",
+      "dirty": true,
+      "source": "checkout"
+    },
+    "toolchain": {
+      "pytest": "9.0.3",
+      "ruff": "0.15.18",
+      "PyYAML": "6.0.2",
+      "bandit": "1.9.4",
+      "mutmut": "3.8.0"
+    }
+  }
+}

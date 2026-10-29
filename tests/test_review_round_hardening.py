@@ -34,11 +34,14 @@ from __future__ import annotations
 import codecs
 import hashlib
 import json
+import os
+import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
+import pytest
 import yaml
 
 from edad import gate, review
@@ -54,6 +57,42 @@ NITS_ONLY = json.dumps(
     {"findings": [{"item": "T8", "severity": "nit", "issue": "the name could read better"}]}
 )
 REVIEWER_TIMEOUT_S = 900
+PROJECT_MARKERS = (".git", "CLAUDE.md")
+
+
+def inside_a_project(path: Path) -> bool:
+    return any((d / m).exists() for d in (path, *path.parents) for m in PROJECT_MARKERS)
+
+
+@pytest.fixture(autouse=True)
+def outside_projects(monkeypatch, tmp_path_factory):
+    """A fresh directory with no `.git` or `CLAUDE.md` in it or above it, made
+    the system temp location for the test. It is a sibling of `tmp_path`, never
+    inside the repo a test builds there. The real `run_reviewer` refuses a temp
+    directory inside a project (D39), so a test that reaches it must not depend
+    on where this machine's TMPDIR happens to sit."""
+    candidates = [tmp_path_factory.mktemp("reviewer-tmp").resolve()]
+    candidates += [Path(d).resolve() for d in ("/tmp", "/var/tmp") if Path(d).is_dir()]
+    base = next((c for c in candidates if not inside_a_project(c)), None)
+    if base is None:
+        pytest.fail(f"no temp location outside a project among {[str(c) for c in candidates]}")
+    clean = Path(tempfile.mkdtemp(prefix="edad-t041-", dir=base))
+    monkeypatch.setattr(tempfile, "tempdir", str(clean))
+    yield clean
+    shutil.rmtree(clean, ignore_errors=True)
+
+
+@pytest.fixture(autouse=True)
+def claude_on_path(monkeypatch, tmp_path_factory):
+    """A stand-in `claude` first on PATH, so a check for the binary finds one
+    whether or not this machine has it. It is never run: `subprocess.run` is
+    faked wherever the real `run_reviewer` runs."""
+    bin_dir = tmp_path_factory.mktemp("bin")
+    stub = bin_dir / "claude"
+    stub.write_text("#!/bin/sh\nexit 1\n")
+    stub.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ.get('PATH', '')}")
+    return bin_dir
 
 
 def make_repo(root: Path, frozen: list[str] | None = None) -> Path:
@@ -164,11 +203,15 @@ def test_a_round_records_the_bytes_the_reviewer_was_shown(monkeypatch, tmp_path)
     assert recorded[FROZEN] != hashlib.sha256((root / FROZEN).read_bytes()).hexdigest()
 
 
-def test_a_missing_reviewer_binary_is_refused_and_spends_no_round(monkeypatch, tmp_path, capsys):
+def test_a_missing_reviewer_binary_is_refused_and_spends_no_round(
+    monkeypatch, tmp_path, tmp_path_factory, capsys
+):
     # D33: no `claude` on PATH is a clean refusal (exit 2, no traceback), not
     # a crash; nothing is recorded, so the next reviewer that runs is round 1.
     root = make_repo(tmp_path)
     approver = Approver()
+    empty_bin = tmp_path_factory.mktemp("empty-bin")
+    monkeypatch.setenv("PATH", str(empty_bin))  # no `claude` to find, by lookup or by launch
 
     def missing(argv, **kwargs):
         raise FileNotFoundError(2, "No such file or directory", argv[0])
@@ -297,16 +340,21 @@ def test_the_reviewers_output_is_read_as_utf8(monkeypatch, tmp_path):
     assert json.loads(record_path(root).read_text())["rounds"][-1]["findings"][0]["issue"] == issue
 
 
-def test_a_temp_directory_inside_a_project_launches_no_reviewer(monkeypatch, tmp_path, capsys):
+def test_a_temp_directory_inside_a_project_launches_no_reviewer(
+    monkeypatch, tmp_path, capsys, outside_projects
+):
     # D39: the reviewer's empty directory comes from the system temp location.
     # When that location sits inside a project (a `.git` or `CLAUDE.md` in it or
     # any directory above), `claude` would load that project, so the round is
     # refused before any launch, naming what it found, and spends no round.
     # The directory it made is removed.
     outcomes = []
-    for marker in (".git", "CLAUDE.md"):
-        root = make_repo(tmp_path / marker.strip("."))
-        project = root / "work"
+    # Each case's paths are neutral, so the marker named in the error can only
+    # come from the one planted, and the project sits where nothing above it
+    # is a project.
+    for i, marker in enumerate(PROJECT_MARKERS):
+        root = make_repo(tmp_path / f"case{i}")
+        project = outside_projects / f"case{i}"
         (project / "tmp").mkdir(parents=True)
         if marker == ".git":
             (project / ".git").mkdir()
