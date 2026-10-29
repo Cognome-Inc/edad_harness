@@ -258,7 +258,7 @@ preference): `python3 -m pytest tests/test_review_cli.py::test_every_rubric_item
 
 Rejected: per-ticket sections — the operator would scan every section to find
 what needs action.
-Verify: `python3 -m pytest tests/test_morning_notes.py::test_morning_notes_put_needs_you_first_and_nits_last -q`
+Verify: `python3 -m pytest tests/test_morning_notes.py::test_morning_notes_put_needs_you_first_and_nits_last tests/test_morning_notes.py::test_morning_notes_keep_every_section_when_the_night_has_nothing_to_report tests/test_morning_notes.py::test_needs_you_lists_the_panel_skip_then_failed_tickets_then_unfixed_majors tests/test_morning_notes.py::test_test_strength_shows_each_tickets_mutation_score_and_its_survivors tests/test_morning_notes.py::test_dismissed_findings_are_listed_each_with_its_own_reason tests/test_morning_notes.py::test_fixed_overnight_lists_the_findings_the_fix_rounds_closed tests/test_morning_notes.py::test_nits_are_grouped_under_their_ticket -q`
 
 ### Re-grill, 2026-10-27 (gaps raised by /to-spec)
 
@@ -392,6 +392,12 @@ unchanged. D4, D10 and D13's notes assertions stay in the panel file and drive
 the notes writer, so the panel ticket is blocked by the notes ticket.
 Rejected: keep one file — panel tickets authored and merged strictly in
 sequence.
+
+**Amended D20, 2026-10-29 — split into one test per section (T032 authoring).**
+The tests rubric scores "one behavior per test" (T3) a major, and one test
+covering the order and all five sections' contents would carry it. D20's verify
+now names seven tests: the order (the original name, unchanged), the empty
+night, and one per section. The decision itself is unchanged.
 
 ### Deferred
 
@@ -598,7 +604,7 @@ decisions:
   - id: D20
     decision: morning notes are one Markdown file per night in .edad/runs/, sections in order Needs you, Test strength, Dismissed findings, Fixed overnight, Nits
     verify:
-      - python3 -m pytest tests/test_morning_notes.py::test_morning_notes_put_needs_you_first_and_nits_last -q
+      - python3 -m pytest tests/test_morning_notes.py::test_morning_notes_put_needs_you_first_and_nits_last tests/test_morning_notes.py::test_morning_notes_keep_every_section_when_the_night_has_nothing_to_report tests/test_morning_notes.py::test_needs_you_lists_the_panel_skip_then_failed_tickets_then_unfixed_majors tests/test_morning_notes.py::test_test_strength_shows_each_tickets_mutation_score_and_its_survivors tests/test_morning_notes.py::test_dismissed_findings_are_listed_each_with_its_own_reason tests/test_morning_notes.py::test_fixed_overnight_lists_the_findings_the_fix_rounds_closed tests/test_morning_notes.py::test_nits_are_grouped_under_their_ticket -q
     frozen:
       - tests/test_morning_notes.py
     scope:

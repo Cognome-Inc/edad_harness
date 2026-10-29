@@ -242,6 +242,11 @@ def cmd_tests(args: argparse.Namespace) -> int:
     return run_approve(root, tid)
 
 
+def morning_notes(date: str, run_branch: str, sessions: list[dict]) -> str:
+    """STUB (T032 contract): the night's act-first Markdown page (D20)."""
+    return ""
+
+
 def cmd_panel(args: argparse.Namespace) -> int:
     print("edad.review panel: not built yet (T036)", file=sys.stderr)
     return 2
