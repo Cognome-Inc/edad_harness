@@ -1,0 +1,125 @@
+{
+  "ticket": "T041",
+  "started_at": "2026-10-29T00:34:24.794740+00:00",
+  "commit": "3a188f33511e293c52ecf1fd84f35ffc0f180579",
+  "base_ref": "5c1ac1e8b4a2e382a4a66495161deaa4655bf5a7",
+  "gate": "full_gate",
+  "freeze_ok": true,
+  "commands_ok": true,
+  "scope_violations": [],
+  "scope_enforced": true,
+  "violations": [],
+  "changed_files": [
+    ".claude/skills/next/SKILL.md",
+    ".claude/skills/to-tickets/SKILL.md",
+    "edad/review.py",
+    "edad/session.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest -q",
+      "exit_code": 0,
+      "duration_s": 32.96,
+      "output_tail": "........................................................................ [ 21%]\n........................................................................ [ 42%]\n........................................................................ [ 63%]\n........................................................................ [ 85%]\n..................................................                       [100%]\n338 passed in 32.71s\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "duration_s": 0.07,
+      "output_tail": "All checks passed!\n",
+      "named_paths": [],
+      "timed_out": false,
+      "failure_keys": {}
+    }
+  ],
+  "decisions": [
+    "D32",
+    "D33",
+    "D34",
+    "D37",
+    "D38",
+    "D39"
+  ],
+  "red_proof": [
+    {
+      "command": "python3 -m pytest tests/test_review_round_hardening.py::test_a_round_records_the_bytes_the_reviewer_was_shown -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_review_round_hardening.py::test_a_round_records_the_bytes_the_reviewer_was_shown"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_review_round_hardening.py::test_a_missing_reviewer_binary_is_refused_and_spends_no_round -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_review_round_hardening.py::test_a_missing_reviewer_binary_is_refused_and_spends_no_round"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_review_round_hardening.py::test_a_reviewer_that_times_out_is_refused_and_spends_no_round -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_review_round_hardening.py::test_a_reviewer_that_times_out_is_refused_and_spends_no_round"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_review_round_hardening.py::test_a_ticket_with_no_frozen_files_launches_no_reviewer -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_review_round_hardening.py::test_a_ticket_with_no_frozen_files_launches_no_reviewer"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_review_round_hardening.py::test_a_corrupt_review_record_is_refused_and_left_alone -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_review_round_hardening.py::test_a_corrupt_review_record_is_refused_and_left_alone"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_review_round_hardening.py::test_the_reviewer_cannot_read_the_callers_stdin -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_review_round_hardening.py::test_the_reviewer_cannot_read_the_callers_stdin"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_review_round_hardening.py::test_the_reviewers_output_is_read_as_utf8 -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_review_round_hardening.py::test_the_reviewers_output_is_read_as_utf8"
+      ]
+    },
+    {
+      "command": "python3 -m pytest tests/test_review_round_hardening.py::test_a_temp_directory_inside_a_project_launches_no_reviewer -q",
+      "exit_code": 1,
+      "detected_by": [
+        "tests/test_review_round_hardening.py::test_a_temp_directory_inside_a_project_launches_no_reviewer"
+      ]
+    }
+  ],
+  "mutation_proof": null,
+  "approved": true,
+  "ticket_verified": true,
+  "baseline_commit": null,
+  "new_failures": {},
+  "uncomparable_failures": [],
+  "harness": {
+    "version": null,
+    "commit": "5c1ac1e8b4a2e382a4a66495161deaa4655bf5a7",
+    "dirty": false,
+    "source": "checkout"
+  },
+  "toolchain": {
+    "pytest": "9.0.3",
+    "ruff": "0.15.18",
+    "PyYAML": "6.0.2",
+    "bandit": "1.9.4",
+    "mutmut": "3.8.0"
+  },
+  "passed": true,
+  "passed_modulo_baseline": false
+}
