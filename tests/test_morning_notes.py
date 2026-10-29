@@ -94,6 +94,10 @@ NIGHT = [
         "ticket": "T054", "outcome": "aborted", "abort_reason": "max_iterations reached",
         "panel": None,
     },
+    {   # passed, but the run stopped before any mutant finished: a score of nothing
+        "ticket": "T055", "outcome": "passed", "abort_reason": None,
+        "panel": panel(mutation_score={"killed": 0, "total": 0, "survivors": [], "partial": True}),
+    },
 ]
 
 
@@ -190,6 +194,10 @@ def test_test_strength_shows_each_tickets_mutation_score_and_its_survivors():
     for survivor in ("edad.review.render__mutmut_3", "edad.review.render__mutmut_8"):
         assert t050 < line_index(lines, survivor) < t051, "a survivor sits under its ticket"
         assert where(page, survivor) == ["Test strength"]
+    # a 0/0 score is shown as it is, not divided into a percentage
+    t055 = lines[line_index(lines, "T055")]
+    assert re.search(r"\b0 ?/ ?0\b", t055)
+    assert "partial" in t055
     # no score was measured for these, so none may be shown
     for ticket in ("T052", "T053", "T054"):
         assert not any(ticket in line and re.search(r"\d ?/ ?\d", line) for line in lines)
